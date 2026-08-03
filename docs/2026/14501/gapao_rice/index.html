@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【新登場】ガパオライス・プレート | rassurer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'Zen Maru Gothic', 'sans-serif'],
+                    },
+                    colors: {
+                        thai: {
+                            orange: '#FF5E36',
+                            yellow: '#FFB800',
+                            green: '#10B981',
+                            dark: '#1E1B18',
+                            cream: '#FFFBEF',
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .thai-gradient {
+            background: linear-gradient(135deg, #FF5E36 0%, #FFB800 100%);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #FF5E36 0%, #FFB800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-thai-cream text-thai-dark font-sans overflow-x-hidden">
+
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-thai-orange/10 transition-all duration-300">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🍛</span>
+            <span class="font-extrabold text-lg md:text-xl tracking-tight text-thai-dark">
+                rassu<span class="text-thai-orange">rer</span>
+            </span>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
+            <a href="#about" class="hover:text-thai-orange transition-colors">魅力</a>
+            <a href="#congestion" class="hover:text-thai-orange transition-colors">混雑予想</a>
+            <a href="#reviews" class="hover:text-thai-orange transition-colors">学生の声</a>
+        </nav>
+        <a href="#congestion" class="bg-thai-orange hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-full text-sm shadow-md shadow-thai-orange/20 transition-all transform hover:-translate-y-0.5">
+            混雑状況をみる 📊
+        </a>
+    </div>
+</header>
+
+<section class="relative overflow-hidden pt-8 pb-16 md:py-24">
+    <!-- Background Accents -->
+    <div class="absolute -top-10 -right-10 w-72 h-72 bg-thai-yellow rounded-full filter blur-3xl opacity-20 pointer-events-none"></div>
+    <div class="absolute top-1/2 -left-12 w-64 h-64 bg-thai-orange rounded-full filter blur-3xl opacity-15 pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <!-- Text content (Left on Desktop) -->
+        <div class="md:col-span-7 space-y-6 text-center md:text-left z-10">
+            <div class="inline-flex items-center gap-2 bg-thai-orange/10 text-thai-orange font-bold text-xs md:text-sm px-3 py-1.5 rounded-full">
+                <span class="animate-pulse">🔥</span> 2026年夏の新型学食プレート登場！
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black leading-tight text-thai-dark">
+                講義のあとに、<br class="hidden md:block">
+                アツアツ本格タイ気分！<br>
+                <span class="text-gradient">ガパオライス・プレート</span>
+            </h1>
+            <p class="text-gray-600 text-base md:text-lg max-w-lg leading-relaxed mx-auto md:mx-0">
+                お財布に優しい安心価格で、味は超本格派。とろ〜り半熟卵とスパイシーなひき肉がバジルに絡み合う、最高に映えるワンプレートランチ！
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-2">
+                <div class="text-center md:text-left">
+                    <span class="text-3xl md:text-4xl font-extrabold text-thai-orange">プレート価格 ¥600</span>
+                    <span class="text-xs bg-thai-orange/20 text-thai-orange font-bold px-2 py-0.5 rounded-md ml-1 inline-block align-middle">税込</span>
+                </div>
+                <a href="#congestion" class="w-full sm:w-auto text-center bg-thai-orange hover:bg-thai-orange/90 text-white font-extrabold px-8 py-4 rounded-2xl shadow-lg shadow-thai-orange/30 transition-all transform hover:scale-105">
+                    混雑予想チェッカーへ 👉
+                </a>
+            </div>
+            
+            <!-- Quick Features Badges -->
+            <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-4 text-xs font-bold text-gray-700">
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm text-thai-orange"><i class="fa-solid fa-bolt mr-1"></i> 驚きの1分以内スピード提供！</span>
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">⏰ 月〜金 10:00〜17:30</span>
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">🍳 目玉焼きのせ</span>
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">🌿 国産スイートバジル使用</span>
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">🌶 旨辛スパイシー</span>
+                <span class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">📱 テイクアウトOK</span>
+            </div>
+        </div>
+
+        <!-- Visual Content (Right on Desktop) -->
+        <div class="md:col-span-5 relative flex justify-center z-10">
+            <div class="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96">
+                <!-- Outer background glow ring -->
+                <div class="absolute inset-0 rounded-full border-4 border-dashed border-thai-yellow animate-[spin_30s_linear_infinite]"></div>
+                
+                <!-- Main Food Graphic container -->
+                <div class="absolute inset-4 rounded-full bg-gradient-to-tr from-thai-orange to-thai-yellow p-1.5 shadow-2xl overflow-hidden">
+                    <div class="w-full h-full rounded-full overflow-hidden border-4 border-white relative">
+                        <img 
+                            src="Gapao_rice_plate_with_fried_202607201825.jpeg" 
+                            alt="本格ガパオライス・プレート" 
+                            class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                            onerror="this.onerror=null; this.src='https://placehold.co/600x600/FFFBEF/FF5E36?text=Gapao+Plate';"
+                        />
+                        <!-- Subtle Overlay Info -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-thai-dark/85 backdrop-blur-sm text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-md">
+                            ガパオライス ＋ サラダ付
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating badges -->
+                <div class="absolute -top-3 -left-3 bg-white border-2 border-thai-orange text-thai-orange font-black text-sm px-4 py-2 rounded-2xl shadow-md rotate-[-6deg]">
+                    売切御免！⏰
+                </div>
+                <div class="absolute -bottom-3 -right-3 bg-thai-dark text-white font-black text-xs px-4 py-2 rounded-2xl shadow-lg rotate-[8deg]">
+                    テイクアウトOK 🥡
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="bg-white py-16">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <h2 class="text-xs font-black text-thai-orange tracking-widest uppercase mb-2">FEATURES</h2>
+            <p class="text-3xl md:text-4xl font-extrabold text-thai-dark">
+                ただの学食メニューじゃない！<br>
+                学生のためのこだわりプレート
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Feature 1 -->
+            <div class="bg-thai-cream p-6 rounded-3xl border border-thai-orange/10 hover:shadow-xl hover:shadow-thai-orange/5 transition-all duration-300 transform hover:-translate-y-1">
+                <div class="w-12 h-12 bg-thai-orange text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-4">
+                    🌶
+                </div>
+                <h3 class="text-lg font-bold mb-2">本格タイの調味料を使用</h3>
+                <p class="text-gray-600 text-xs leading-relaxed">
+                    ナンプラーやオイスターソースをブレンドした特製タレを使用。日本人学生が「旨い！」と感じる絶妙なスパイシー感を引き出しました。
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-thai-cream p-6 rounded-3xl border border-thai-orange/10 hover:shadow-xl hover:shadow-thai-orange/5 transition-all duration-300 transform hover:-translate-y-1">
+                <div class="w-12 h-12 bg-thai-yellow text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-4">
+                    🥗
+                </div>
+                <h3 class="text-lg font-bold mb-2">すっきりヘルシー生サラダ</h3>
+                <p class="text-gray-600 text-xs leading-relaxed">
+                    忙しくて野菜不足になりがちな学生生活をサポート。プレート横にはシャキシャキの生野菜サラダをトッピング。彩りもバッチリです。
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-thai-cream p-6 rounded-3xl border border-thai-orange/10 hover:shadow-xl hover:shadow-thai-orange/5 transition-all duration-300 transform hover:-translate-y-1">
+                <div class="w-12 h-12 bg-thai-green text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-4">
+                    📸
+                </div>
+                <h3 class="text-lg font-bold mb-2">思わず撮りたくなる映えプレート</h3>
+                <p class="text-gray-600 text-xs leading-relaxed">
+                    木目調の丸型プレートにカラフルなパプリカ、香ばしい目玉焼き。キャンパスで「今日のお昼！」とSNSに投稿したくなるビジュアルにこだわしました。
+                </p>
+            </div>
+
+            <!-- Feature 4 (Speed Provision) -->
+            <div class="bg-thai-cream p-6 rounded-3xl border border-thai-orange/10 hover:shadow-xl hover:shadow-thai-orange/5 transition-all duration-300 transform hover:-translate-y-1">
+                <div class="w-12 h-12 bg-sky-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-4">
+                    ⚡
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-sky-600">驚きの1分以内スピード提供！</h3>
+                <p class="text-gray-600 text-xs leading-relaxed">
+                    「講義の合間でお昼を食べる時間がない…」そんな時も安心！独自オペレーションにより、注文から原則1分以内にお渡しできる爆速スピードを確立しました。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="congestion" class="py-16 bg-thai-cream">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h2 class="text-xs font-black text-thai-green tracking-widest uppercase mb-2">CAMPUS TIME</h2>
+            <p class="text-3xl font-extrabold text-thai-dark">
+                スマートランチ！混雑予想チェッカー
+            </p>
+            <p class="text-gray-500 text-sm mt-1">混雑を回避して、講義間の短い休憩をスマートに過ごしよう！</p>
+        </div>
+
+        <!-- Corrected Congestion Container -->
+        <div class="bg-white p-6 md:p-8 rounded-3xl border border-thai-orange/10 shadow-lg">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-200/60 pb-6 mb-6">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">曜日を選択</span>
+                    <h3 class="text-lg font-black text-thai-dark">日別の混雑傾向を見る</h3>
+                </div>
+                <select id="day-selector" onchange="updateCongestionData()" class="w-full sm:w-auto bg-thai-cream border-2 border-thai-orange/20 text-thai-dark font-extrabold px-4 py-2.5 rounded-xl focus:outline-none focus:border-thai-orange transition-all cursor-pointer">
+                    <option value="monday">月曜日 (比較的スムーズ)</option>
+                    <option value="wednesday" selected>水曜日 (混雑ピーク)</option>
+                    <option value="friday">金曜日 (週末おだやか)</option>
+                </select>
+            </div>
+
+            <!-- Meters list -->
+            <div class="space-y-6">
+                <!-- Slot 1 -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-extrabold text-thai-dark">🕒 3限前 (11:30〜12:15)</span>
+                        <div class="flex items-center gap-2">
+                            <span id="slot1-label" class="text-green-500 font-extrabold">比較的スムーズ</span>
+                            <span id="slot1-val" class="text-gray-400 text-xs font-bold">待ち時間 3分</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div id="slot1-bar" class="bg-green-500 h-3 rounded-full transition-all duration-500" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <!-- Slot 2 -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-extrabold text-thai-dark">🕒 昼休み (12:15〜13:00)</span>
+                        <div class="flex items-center gap-2">
+                            <span id="slot2-label" class="text-red-500 font-extrabold">大変混雑します</span>
+                            <span id="slot2-val" class="text-gray-400 text-xs font-bold">待ち時間 12分</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div id="slot2-bar" class="bg-red-500 h-3 rounded-full transition-all duration-500" style="width: 85%"></div>
+                    </div>
+                </div>
+
+                <!-- Slot 3 -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-extrabold text-thai-dark">🕒 4限前 (13:00〜14:00)</span>
+                        <div class="flex items-center gap-2">
+                            <span id="slot3-label" class="text-thai-yellow font-extrabold">まったりゆったり</span>
+                            <span id="slot3-val" class="text-gray-400 text-xs font-bold">待ち時間 5分</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div id="slot3-bar" class="bg-thai-yellow h-3 rounded-full transition-all duration-500" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-gray-400 text-center mt-6">
+                ※講義のスケジュールや天気によって実際の混雑度は変動します。
+            </p>
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="bg-white py-16">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <h2 class="text-xs font-black text-thai-orange tracking-widest uppercase mb-2">REVIEWS</h2>
+            <p class="text-3xl font-extrabold text-thai-dark">先行試食した学生のリアルな声</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Review 1 -->
+            <div class="bg-thai-cream/50 p-6 rounded-3xl border border-gray-100">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-thai-orange/10 flex items-center justify-center text-lg">👩‍学</div>
+                    <div>
+                        <h4 class="font-bold text-sm">文学部 3年</h4>
+                        <div class="text-thai-yellow text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                </div>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    「とにかく目玉焼きの黄身がとろ〜っとしてて、スパイシーなひき肉によく合います！バジルの香りが本格的で、学食とは思えないクオリティ。リピ確定です！」
+                </p>
+            </div>
+
+            <!-- Review 2 -->
+            <div class="bg-thai-cream/50 p-6 rounded-3xl border border-gray-100">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-thai-orange/10 flex items-center justify-center text-lg">👨‍学</div>
+                    <div>
+                        <h4 class="font-bold text-sm">理工学部 2年</h4>
+                        <div class="text-thai-yellow text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                </div>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    「この本格派プレートが600円は本当にありがたい。サラダもしゃきしゃきで結構ボリュームあるし、しっかり満足感があります。お昼休みのヘビロテメニューになりそう！」
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-thai-dark text-white py-12">
+    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">🍛</span>
+                <span class="font-extrabold text-lg tracking-tight">
+                    rassu<span class="text-thai-orange">rer</span>
+                </span>
+            </div>
+            <p class="text-xs text-gray-400 leading-relaxed max-w-xs">
+                キャンパスライフをもっと美味しく、もっと楽しく。新鮮な食材とリーズナブルな価格で、毎日のお昼休みを彩ります。
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-thai-orange pl-2">営業情報</h3>
+            <ul class="text-xs text-gray-400 space-y-2">
+                <li>📍 大学二号館二階 キャンパスカフェテリア内</li>
+                <li>⏰ 営業時間：月〜金 10:00 〜 17:30</li>
+                <li>🥪 テイクアウトカウンターも元気に営業中</li>
+            </ul>
+        </div>
+
+        <div>
+            <h3 class="font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-thai-orange pl-2">SNS & リンク</h3>
+            <div class="flex gap-4">
+                <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-thai-orange flex items-center justify-center text-sm transition-colors">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-thai-orange flex items-center justify-center text-sm transition-colors">
+                    <i class="fa-brands fa-twitter"></i>
+                </a>
+                <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-thai-orange flex items-center justify-center text-sm transition-colors">
+                    <i class="fa-solid fa-envelope"></i>
+                </a>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-4">
+                © 2026 rassurer. All rights reserved. 
+            </p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Mock Campus congestion indicator values on selector change
+    const congestionData = {
+        monday: {
+            slot1: { label: "余裕あり", val: "待ち時間 2分", bar: "15%", color: "bg-green-500", text: "text-green-500" },
+            slot2: { label: "やや混雑", val: "待ち時間 6分", bar: "50%", color: "bg-thai-yellow", text: "text-thai-yellow" },
+            slot3: { label: "空いてます", val: "待ち時間 1分", bar: "10%", color: "bg-green-500", text: "text-green-500" }
+        },
+        wednesday: {
+            slot1: { label: "比較的スムーズ", val: "待ち時間 3分", bar: "25%", color: "bg-green-500", text: "text-green-500" },
+            slot2: { label: "大変混雑します", val: "待ち時間 12分", bar: "85%", color: "bg-red-500", text: "text-red-500" },
+            slot3: { label: "まったりゆったり", val: "待ち時間 5分", bar: "45%", color: "bg-thai-yellow", text: "text-thai-yellow" }
+        },
+        friday: {
+            slot1: { label: "比較的スムーズ", val: "待ち時間 3分", bar: "20%", color: "bg-green-500", text: "text-green-500" },
+            slot2: { label: "混雑傾向", val: "待ち時間 8分", bar: "65%", color: "bg-thai-yellow", text: "text-thai-yellow" },
+            slot3: { label: "貸し切り状態！", val: "待ち時間 なし", bar: "5%", color: "bg-green-500", text: "text-green-500" }
+        }
+    };
+
+    function updateCongestionData() {
+        const selectedDay = document.getElementById('day-selector').value;
+        const dataset = congestionData[selectedDay];
+
+        // Slot 1
+        const s1Label = document.getElementById('slot1-label');
+        s1Label.innerText = dataset.slot1.label;
+        s1Label.className = `${dataset.slot1.text} font-extrabold`;
+        document.getElementById('slot1-val').innerText = dataset.slot1.val;
+        const s1Bar = document.getElementById('slot1-bar');
+        s1Bar.style.width = dataset.slot1.bar;
+        s1Bar.className = `${dataset.slot1.color} h-3 rounded-full transition-all duration-500`;
+
+        // Slot 2
+        const s2Label = document.getElementById('slot2-label');
+        s2Label.innerText = dataset.slot2.label;
+        s2Label.className = `${dataset.slot2.text} font-extrabold`;
+        document.getElementById('slot2-val').innerText = dataset.slot2.val;
+        const s2Bar = document.getElementById('slot2-bar');
+        s2Bar.style.width = dataset.slot2.bar;
+        s2Bar.className = `${dataset.slot2.color} h-3 rounded-full transition-all duration-500`;
+
+        // Slot 3
+        const s3Label = document.getElementById('slot3-label');
+        s3Label.innerText = dataset.slot3.label;
+        s3Label.className = `${dataset.slot3.text} font-extrabold`;
+        document.getElementById('slot3-val').innerText = dataset.slot3.val;
+        const s3Bar = document.getElementById('slot3-bar');
+        s3Bar.style.width = dataset.slot3.bar;
+        s3Bar.className = `${dataset.slot3.color} h-3 rounded-full transition-all duration-500`;
+    }
+
+    // Ensure the default selection data is populated on window load
+    window.onload = function() {
+        updateCongestionData();
+    }
+</script>
+
+</body>
+</html>

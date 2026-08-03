@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雅Type - 庵の和風四字熟語タイピング</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: 麗しい明朝体と和風フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Sawarabi+Mincho&family=Yuji_Syuku&display=swap" rel="stylesheet">
+    <!-- Font Awesome (和風・伝統系アイコン) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for traditional synthesized audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Canvas Confetti for Sakura-fubuki celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-wash: #fbf9f5;
+            --color-wood: #5c4033;
+            --color-tatami: #a3b18a;
+            --color-shoji: #f4efe2;
+            --color-ink: #1c1c1c;
+            --color-gold: #d4af37;
+            --color-sakura: #ffb7c5;
+            --font-miyabi: 'Noto Serif JP', 'Sawarabi Mincho', serif;
+            --font-brush: 'Yuji Syuku', serif;
+        }
+
+        /* Urushi Black Theme (漆黒) */
+        .theme-urushi {
+            --bg-wash: #121212;
+            --color-wood: #2c1a12;
+            --color-tatami: #3a4731;
+            --color-shoji: #221c1a;
+            --color-ink: #f0e6d2;
+            --color-gold: #ffcf40;
+            --color-sakura: #f3a8b1;
+        }
+
+        /* Bamboo Forest Theme (竹林) */
+        .theme-chikurin {
+            --bg-wash: #f0f4ef;
+            --color-wood: #3d5a4c;
+            --color-tatami: #52796f;
+            --color-shoji: #e2ede4;
+            --color-ink: #1a3020;
+            --color-gold: #c9a44c;
+            --color-sakura: #ffa6c9;
+        }
+
+        /* Miyabi Moonlight (宵闇) */
+        .theme-yoiyami {
+            --bg-wash: #0d1b2a;
+            --color-wood: #1b263b;
+            --color-tatami: #415a77;
+            --color-shoji: #1e293b;
+            --color-ink: #e0e1dd;
+            --color-gold: #f39c12;
+            --color-sakura: #fbc4ab;
+        }
+
+        body {
+            font-family: var(--font-miyabi);
+            background-color: var(--bg-wash);
+            color: var(--color-ink);
+            transition: background-color 0.8s ease, color 0.5s ease;
+            background-image: radial-gradient(var(--color-shoji) 1px, transparent 1px);
+            background-size: 24px 24px;
+            overflow-x: hidden;
+        }
+
+        /* Traditional Shoji Sliding Screen Style */
+        .shoji-panel {
+            background-color: rgba(254, 252, 247, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 4px solid var(--color-wood);
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(92, 64, 51, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .shoji-grid {
+            background-image: 
+                linear-gradient(to right, rgba(92, 64, 51, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(92, 64, 51, 0.08) 1px, transparent 1px);
+            background-size: 40px 60px;
+        }
+
+        /* Tatami Edge design helper */
+        .tatami-edge {
+            border-bottom: 8px solid var(--color-tatami);
+            border-image: repeating-linear-gradient(45deg, var(--color-wood), var(--color-wood) 10px, var(--color-tatami) 10px, var(--color-tatami) 20px) 20;
+        }
+
+        /* Hanging Scroll (Kakejiku) Style */
+        .kakejiku {
+            background: #fcf8f2;
+            border-left: 12px solid var(--color-wood);
+            border-right: 12px solid var(--color-wood);
+            border-top: 4px solid #8b5a2b;
+            border-bottom: 24px solid #8b5a2b;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);
+        }
+
+        /* Traditional Wooden key */
+        .wood-keycap {
+            background: #fcf6eb;
+            color: #4a3319;
+            border: 2px solid var(--color-wood);
+            border-bottom-width: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.06s ease;
+            font-weight: 700;
+        }
+        .wood-keycap.active {
+            background: var(--color-gold) !important;
+            color: #1c1c1c !important;
+            border-bottom-width: 1px;
+            transform: translateY(4px);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+        .wood-keycap.target {
+            border-color: var(--color-gold);
+            background: #fffcf0;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+            animation: bounce-little 1s infinite alternate;
+        }
+
+        @keyframes bounce-little {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-2px); }
+        }
+
+        /* Floating Sakura Petals Animation */
+        .sakura-petal {
+            position: absolute;
+            background-color: var(--color-sakura);
+            border-radius: 150% 0 150% 150%;
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: 5;
+            animation: fall-sway 10s linear infinite;
+        }
+
+        @keyframes fall-sway {
+            0% {
+                transform: translate(0, -10px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(150px, 105vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Sliding Fusuma Door for Game Over transition */
+        .fusuma-door {
+            position: fixed;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background-color: #f7f3e8;
+            background-image: 
+                linear-gradient(to right, rgba(92, 64, 51, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(92, 64, 51, 0.05) 1px, transparent 1px);
+            background-size: 60px 100px;
+            border: 12px solid var(--color-wood);
+            z-index: 100;
+            transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 40px rgba(0,0,0,0.3);
+        }
+
+        .fusuma-left {
+            left: 0;
+            transform: translateX(-100%);
+            justify-content: flex-end;
+            border-right: 18px double var(--color-wood);
+        }
+
+        .fusuma-right {
+            right: 0;
+            transform: translateX(100%);
+            justify-content: flex-start;
+            border-left: 18px double var(--color-wood);
+        }
+
+        .fusuma-door.closed {
+            transform: translateX(0);
+        }
+
+        /* Fusuma pull handle (Hikite) */
+        .hikite {
+            width: 48px;
+            height: 90px;
+            background: #111;
+            border: 2px solid var(--color-gold);
+            border-radius: 50% / 15%;
+            margin: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.6);
+        }
+
+        /* Shishiodoshi (water fountain) swing animation */
+        @keyframes shishiodoshi-tilt {
+            0%, 100% { transform: rotate(0deg); }
+            45% { transform: rotate(25deg); }
+            55% { transform: rotate(-5deg); }
+        }
+        .tilt-active {
+            animation: shishiodoshi-tilt 1.8s ease-in-out;
+        }
+
+        /* Brush text styled layout */
+        .brush-display {
+            font-family: var(--font-brush);
+            writing-mode: horizontal-tb;
+            letter-spacing: 0.15em;
+        }
+
+        /* Custom shaker style */
+        @keyframes shake-shoji {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake-active {
+            animation: shake-shoji 0.4s ease-in-out;
+        }
+
+        /* IME warning box styling */
+        .ime-alert {
+            background-color: #fff1f2;
+            border: 2px solid #e11d48;
+            color: #9f1239;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.92; transform: scale(0.99); }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col justify-between overflow-y-auto relative">
+
+    <!-- Sound Initialization Overlay -->
+    <div id="sound-init-overlay" class="fixed inset-0 bg-[#f4efe2]/95 z-[150] flex flex-col items-center justify-center p-4 transition-all duration-1000">
+        <div class="shoji-panel max-w-lg w-full p-8 rounded text-center space-y-6 transform translate-y-0 scale-100 transition-all duration-500">
+            <div class="shoji-grid absolute inset-0 -z-10 opacity-70"></div>
+            <div class="w-20 h-20 border-4 border-amber-800 rounded-full mx-auto flex items-center justify-center shadow-md bg-[#faf8f5]">
+                <i class="fa-solid fa-feather text-amber-900 text-4xl"></i>
+            </div>
+            <h1 class="text-3xl font-black text-amber-900 tracking-widest font-brush">雅Type</h1>
+            <p class="text-stone-700 text-sm leading-relaxed font-semibold">
+                しん、と静まり返る奥座敷へようこそ。<br>
+                ここでは心洗われるお琴の旋律とししおどしの響き、そして日本の「四字熟語」があなたを待っています。
+            </p>
+            <div class="bg-[#ede7d9] p-4 rounded border-2 border-stone-400 text-xs text-stone-800 flex items-start gap-3 text-left">
+                <i class="fa-solid fa-circle-info mt-0.5 text-amber-800 flex-shrink-0 text-base"></i>
+                <p class="font-bold leading-normal">
+                    お琴の調べ、カチカチと心地よい伝統打楽器サウンドが流れます。<br>「し」を「si」や「shi」など、お好みの打ち方でタイピングしていただけます。
+                </p>
+            </div>
+            <button onclick="initializeTraditionalAudio()" class="w-full py-4 px-6 bg-amber-900 text-stone-100 hover:bg-amber-950 font-black text-lg tracking-widest flex items-center justify-center gap-3 shadow-md border-b-4 border-amber-950 rounded">
+                <span>暖簾（のれん）をくぐる</span>
+                <i class="fa-solid fa-scroll text-amber-400"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Input for mobile & desktop capturing -->
+    <input type="text" id="keyboard-capture" class="absolute opacity-0 pointer-events-none -z-10" autocomplete="off" autocapitalize="off" spellcheck="false">
+
+    <!-- App Header -->
+    <header class="w-full px-6 py-4 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 z-20">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded bg-amber-900 flex items-center justify-center shadow border-2 border-amber-100">
+                <span class="text-stone-100 font-brush text-2xl font-bold">雅</span>
+            </div>
+            <div>
+                <span class="text-2xl font-black tracking-widest text-amber-950 font-brush">雅Type</span>
+                <span class="text-[9px] block text-amber-800 uppercase tracking-widest font-bold">Zen Idiom Typing</span>
+            </div>
+        </div>
+
+        <!-- System Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-4 z-30">
+            <!-- Traditional Theme Selector -->
+            <div class="flex items-center gap-2 bg-[#f4efe2] border-2 border-amber-900/40 rounded px-2 py-1 shadow-sm">
+                <span class="text-[10px] font-black text-amber-900">香調:</span>
+                <button onclick="setTheme('default')" id="theme-default-btn" class="w-6 h-6 rounded bg-[#fbf9f5] border-2 border-amber-900 transition-all" title="白檀（標準）"></button>
+                <button onclick="setTheme('urushi')" id="theme-urushi-btn" class="w-6 h-6 rounded bg-[#1c1c1c] border-2 border-transparent transition-all" title="漆黒（ダーク）"></button>
+                <button onclick="setTheme('chikurin')" id="theme-chikurin-btn" class="w-6 h-6 rounded bg-[#52796f] border-2 border-transparent transition-all" title="竹林（ミント）"></button>
+                <button onclick="setTheme('yoiyami')" id="theme-yoiyami-btn" class="w-6 h-6 rounded bg-[#0d1b2a] border-2 border-transparent transition-all" title="宵闇（夜色）"></button>
+            </div>
+
+            <!-- Volume Slider -->
+            <div class="flex items-center gap-2 bg-[#f4efe2] border-2 border-amber-900/40 px-3 py-1.5 rounded shadow-sm">
+                <i id="volume-icon" class="fa-solid fa-music text-amber-800 text-xs"></i>
+                <input type="range" id="volume-slider" min="-30" max="0" value="-10" class="w-16 h-1 rounded accent-amber-900 bg-stone-300 appearance-none cursor-pointer">
+            </div>
+
+            <!-- Genre Selection Dropdown -->
+            <div class="flex items-center bg-[#f4efe2] border-2 border-amber-900/40 rounded p-0.5 shadow-sm">
+                <button id="mode-yoji" onclick="setTypingMode('yoji')" class="px-4 py-1.5 rounded text-xs font-black transition-all bg-amber-900 text-white shadow">四字熟語</button>
+                <button id="mode-wafu" onclick="setTypingMode('wafu')" class="px-4 py-1.5 rounded text-xs font-black transition-all text-amber-900 hover:text-amber-950">和の情景</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-6 flex-grow flex flex-col justify-center gap-6 relative" onclick="focusCapture()">
+        <!-- Particle Floating Container -->
+        <div id="particles-container" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+        <!-- Tatami Decorative Frame -->
+        <div class="w-full shoji-panel rounded p-6 md:p-8 flex flex-col justify-between min-h-[480px] tatami-edge">
+            <!-- Shoji wood lines backdrop -->
+            <div class="shoji-grid absolute inset-0 -z-10 opacity-40"></div>
+            
+            <!-- Category and Mode Header -->
+            <div class="flex flex-col sm:flex-row items-center justify-between border-b-2 border-amber-900/20 pb-4 mb-4 gap-3">
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <span id="mode-badge" class="bg-amber-100 border-2 border-amber-900/30 text-amber-900 text-xs px-3 py-1.5 rounded font-black tracking-widest font-brush">
+                        <i class="fa-solid fa-wind mr-1.5 animate-pulse"></i>四字熟語の書
+                    </span>
+                    <button onclick="setThemeRandomly()" class="bg-stone-100 border-2 border-stone-300 text-stone-700 text-xs px-3 py-1.5 rounded font-bold hover:bg-stone-200 transition-all">お香を焚く（背景色変更）</button>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="resetGame()" class="text-amber-950 hover:text-amber-900 text-xs transition-colors flex items-center gap-1.5 bg-[#faf8f5] border-2 border-amber-900/30 px-3 py-1.5 rounded shadow-sm font-bold">
+                        <i class="fa-solid fa-rotate-left"></i> <span>茶を淹れ直す（再起動）</span>
+                    </button>
+                    <div id="focus-reminder" class="text-[10px] text-amber-900 font-bold bg-amber-50 px-2 py-1 rounded border border-amber-900/20 animate-pulse">
+                        お座敷を叩く、またはキーを押してね
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Placards (Wooden Plate Style) -->
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-4">
+                <div class="bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner relative overflow-hidden">
+                    <span class="text-[10px] text-stone-500 font-black block border-b border-stone-200 pb-1 mb-1">運筆速度 (WPM)</span>
+                    <span id="stat-wpm" class="text-2xl md:text-3xl font-black text-amber-950 font-brush">0</span>
+                </div>
+                <div class="bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner relative overflow-hidden">
+                    <span class="text-[10px] text-stone-500 font-black block border-b border-stone-200 pb-1 mb-1">正確さ (ACC)</span>
+                    <span id="stat-accuracy" class="text-2xl md:text-3xl font-black text-amber-950 font-brush">100%</span>
+                </div>
+                <div class="bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner relative overflow-hidden">
+                    <span class="text-[10px] text-stone-500 font-black block border-b border-stone-200 pb-1 mb-1">打鍵数 (正解/合計)</span>
+                    <span id="stat-keys" class="text-2xl md:text-3xl font-black text-amber-950 font-brush">0<span class="text-xs text-stone-400 font-sans">/0</span></span>
+                </div>
+                <div class="bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner relative overflow-hidden">
+                    <span class="text-[10px] text-stone-500 font-black block border-b border-stone-200 pb-1 mb-1">連打 (COMBO)</span>
+                    <span id="stat-combo" class="text-2xl md:text-3xl font-black text-amber-600 font-brush">0</span>
+                </div>
+                <div class="bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner relative overflow-hidden">
+                    <span class="text-[10px] text-stone-500 font-black block border-b border-stone-200 pb-1 mb-1">残りの砂 (刻)</span>
+                    <span id="stat-time" class="text-2xl md:text-3xl font-black text-amber-950 font-brush">30秒</span>
+                </div>
+                <div class="col-span-2 md:col-span-1 bg-[#faf8f5] border-2 border-amber-900/30 p-3 rounded text-center shadow-inner flex flex-col justify-center items-center">
+                    <span class="text-[10px] text-stone-500 font-black block pb-1">湯呑みのお茶</span>
+                    <div class="w-full bg-stone-200 h-4 rounded overflow-hidden mt-1 border border-amber-900/20 relative">
+                        <!-- Green tea fluid progress bar -->
+                        <div id="stat-progress" class="bg-gradient-to-r from-emerald-600 to-green-400 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IME Active Mode Warning Alert Box -->
+            <div id="ime-warning-box" class="hidden ime-alert px-4 py-3 rounded border-2 flex items-center justify-center gap-3 text-xs md:text-sm font-black mb-4 transition-all">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 text-lg animate-bounce"></i>
+                <div class="text-center sm:text-left">
+                    <p class="text-rose-900">【注意】キーボードが「日本語入力（全角あ）」になっています！</p>
+                    <p class="text-[10px] text-stone-600 font-bold">キーボードの「半角/全角」や「英数」キーを押して、「半角英数（直接入力）」に切り替えてください。</p>
+                </div>
+            </div>
+
+            <!-- Shishiodoshi (Deer Chaser) Mascot & Room Companion -->
+            <div class="flex justify-center items-center gap-6 mb-2">
+                <!-- SVG Shishiodoshi Animation -->
+                <div class="flex items-center gap-2">
+                    <svg id="shishiodoshi-svg" class="w-16 h-12 transition-transform duration-500" viewBox="0 0 100 60">
+                        <!-- Bamboo Stand -->
+                        <line x1="50" y1="20" x2="50" y2="55" stroke="#3d5a4c" stroke-width="4" />
+                        <line x1="35" y1="55" x2="50" y2="20" stroke="#3d5a4c" stroke-width="3" />
+                        <line x1="65" y1="55" x2="50" y2="20" stroke="#3d5a4c" stroke-width="3" />
+                        <!-- Pivoting Bamboo pipe -->
+                        <g id="bamboo-pipe" class="origin-[50px_20px]">
+                            <path d="M 15,10 L 85,25 L 85,30 L 15,15 Z" fill="#52796f" stroke="#2c3e35" stroke-width="1"/>
+                            <ellipse cx="15" cy="12.5" rx="2" ry="4" fill="#3d5a4c" />
+                        </g>
+                        <!-- Stone Basin -->
+                        <path d="M 10,45 L 30,45 L 35,55 L 5,55 Z" fill="#7f8c8d" stroke="#566573" stroke-width="1" />
+                    </svg>
+                    <span class="text-[10px] font-black text-stone-500 block">ししおどし</span>
+                </div>
+                
+                <div id="mascot-img" class="text-3xl">🐱</div>
+                <div class="relative">
+                    <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#eae1cc] border-b-8 border-b-transparent"></div>
+                    <div id="mascot-bubble" class="bg-[#eae1cc] border-2 border-stone-400 px-3 py-1.5 rounded text-xs font-black text-amber-950 shadow-sm leading-tight max-w-xs">
+                        一筆入魂、参りましょう！
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Board styled as Hanging Scroll (Kakejiku) -->
+            <div class="flex-grow flex flex-col justify-center items-center my-3 py-6 kakejiku rounded relative min-h-[160px]">
+                <!-- Scroll Wood roller on sides and top decoration -->
+                <div class="absolute top-1 left-2 text-stone-400 text-xs font-black">【 和の書 】</div>
+
+                <!-- Main Idiom (Large Beautiful Kanji) -->
+                <div id="idiom-kanji" class="text-4xl md:text-5xl font-black tracking-widest text-center text-amber-950 font-brush px-4 select-none mb-1">
+                    一期一会
+                </div>
+
+                <!-- Modern Translation (Meaning of the idiom) -->
+                <div id="idiom-meaning" class="text-xs font-bold text-amber-900 bg-amber-50/70 border border-amber-900/15 px-4 py-1.5 rounded max-w-lg text-center mb-4 leading-relaxed">
+                    一生に一度きりの出会い。その大切さを表した言葉。
+                </div>
+
+                <!-- Hiragana Readings -->
+                <div id="kana-reading" class="text-sm font-bold text-stone-500 tracking-widest mb-1 select-none">
+                    いちごいちえ
+                </div>
+
+                <!-- Romaji Interactive Sequence -->
+                <div id="typing-text-display" class="text-2xl md:text-4xl font-black tracking-widest leading-relaxed font-sans text-center max-w-4xl px-4 select-none">
+                    <!-- Dynamic romaji text generated via Javascript -->
+                </div>
+
+                <!-- Next key trigger cue -->
+                <div id="next-character-hint" class="mt-4 text-xs font-black bg-stone-900 text-stone-100 px-3 py-1.5 rounded border border-stone-800 flex items-center gap-1.5 animate-pulse">
+                    次の鍵: <span id="hint-key" class="font-bold text-stone-900 bg-amber-400 px-2 py-0.5 rounded shadow">I</span>
+                </div>
+            </div>
+
+            <!-- Tea Tray Reward Collection Box -->
+            <div class="flex justify-center items-center gap-2 text-xs font-black text-amber-950 mt-1">
+                <i class="fa-solid fa-mug-hot text-emerald-700 animate-bounce"></i> 淹れたてのお茶: <span id="tea-count" class="text-sm font-bold text-emerald-800 font-sans">0</span> 煎（杯）
+            </div>
+        </div>
+
+        <!-- Virtual Wooden Keyboard Layout -->
+        <div class="w-full shoji-panel rounded p-4 hidden md:block">
+            <div class="shoji-grid absolute inset-0 -z-10 opacity-30"></div>
+            <div class="space-y-1.5 max-w-4xl mx-auto text-stone-600 font-bold text-xs">
+                <!-- Row 1 -->
+                <div class="flex gap-1.5 justify-center">
+                    <div id="key-KeyQ" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">Q</div>
+                    <div id="key-KeyW" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">W</div>
+                    <div id="key-KeyE" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">E</div>
+                    <div id="key-KeyR" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">R</div>
+                    <div id="key-KeyT" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">T</div>
+                    <div id="key-KeyY" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">Y</div>
+                    <div id="key-KeyU" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">U</div>
+                    <div id="key-KeyI" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">I</div>
+                    <div id="key-KeyO" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">O</div>
+                    <div id="key-KeyP" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">P</div>
+                </div>
+                <!-- Row 2 -->
+                <div class="flex gap-1.5 justify-center">
+                    <div id="key-KeyA" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">A</div>
+                    <div id="key-KeyS" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">S</div>
+                    <div id="key-KeyD" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">D</div>
+                    <div id="key-KeyF" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">F</div>
+                    <div id="key-KeyG" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">G</div>
+                    <div id="key-KeyH" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">H</div>
+                    <div id="key-KeyJ" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">J</div>
+                    <div id="key-KeyK" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">K</div>
+                    <div id="key-KeyL" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">L</div>
+                </div>
+                <!-- Row 3 -->
+                <div class="flex gap-1.5 justify-center">
+                    <div id="key-KeyZ" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">Z</div>
+                    <div id="key-KeyX" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">X</div>
+                    <div id="key-KeyC" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">C</div>
+                    <div id="key-KeyV" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">V</div>
+                    <div id="key-KeyB" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">B</div>
+                    <div id="key-KeyN" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">N</div>
+                    <div id="key-KeyM" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">M</div>
+                    <div id="key-Minus" class="wood-keycap w-10 h-10 rounded flex items-center justify-center">-</div>
+                </div>
+                <!-- Row 4 -->
+                <div class="flex gap-1.5 justify-center">
+                    <div id="key-Space" class="wood-keycap flex-grow max-w-[280px] h-10 rounded flex items-center justify-center text-[10px]">空白鍵 (SPACE)</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sliding Fusuma Door Screen for Results Transitions -->
+    <div id="fusuma-left-door" class="fusuma-door fusuma-left">
+        <div class="hikite"></div>
+    </div>
+    <div id="fusuma-right-door" class="fusuma-door fusuma-right">
+        <div class="hikite"></div>
+    </div>
+
+    <!-- Detailed Scores / Traditional Certificate Board overlay -->
+    <div id="result-overlay" class="fixed inset-0 z-[110] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-700 overflow-y-auto">
+        <div class="shoji-panel max-w-2xl w-full p-6 md:p-8 rounded space-y-6 transform translate-y-12 transition-all duration-700 my-8 text-center bg-[#faf6ec] border-8 double border-amber-950">
+            <div class="shoji-grid absolute inset-0 -z-10 opacity-60"></div>
+            
+            <div class="w-20 h-20 bg-amber-100 border-4 border-amber-900 rounded-full flex items-center justify-center shadow-md mx-auto">
+                <i class="fa-solid fa-stamp text-red-700 text-4xl animate-bounce"></i>
+            </div>
+            
+            <h2 class="text-3xl font-black text-amber-950 font-brush tracking-widest">茶会散会（お疲れ様でした）</h2>
+            <p class="text-stone-700 text-sm font-bold">静粛なお座敷での修練、実を結びましたな。</p>
+
+            <!-- Goshuin Stamp Book Board representation -->
+            <div class="bg-[#fdfcf7] p-6 rounded border-2 border-dashed border-amber-900/40 shadow-inner space-y-4">
+                <p class="text-amber-900 font-brush text-xl font-bold tracking-widest border-b border-amber-950/20 pb-2">【 修練の御朱印 】</p>
+                
+                <!-- Displayed Tea collection -->
+                <div class="space-y-1">
+                    <p class="text-xs text-stone-500 font-black">たてたお茶の数々</p>
+                    <div id="tea-icons-container" class="flex flex-wrap justify-center gap-3 text-2xl py-2">
+                        <!-- Dynamic tea cup emojis -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats grid with Goshuin visual borders -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-stone-50 border-2 border-amber-900/20 p-4 rounded text-center">
+                    <span class="text-[10px] text-stone-500 font-bold block mb-1">運筆速度</span>
+                    <span id="result-wpm" class="text-2xl font-black text-amber-950 font-brush">0</span> <span class="text-xs text-stone-500">WPM</span>
+                </div>
+                <div class="bg-stone-50 border-2 border-amber-900/20 p-4 rounded text-center">
+                    <span class="text-[10px] text-stone-500 font-bold block mb-1">正鵠（正確さ）</span>
+                    <span id="result-accuracy" class="text-2xl font-black text-amber-950 font-brush">0%</span>
+                </div>
+                <div class="bg-stone-50 border-2 border-amber-900/20 p-4 rounded text-center">
+                    <span class="text-[10px] text-stone-500 font-bold block mb-1">最長連打</span>
+                    <span id="result-max-combo" class="text-2xl font-black text-amber-600 font-brush">0</span> <span class="text-xs text-stone-500 font-bold">連打</span>
+                </div>
+                <div class="bg-stone-50 border-2 border-amber-900/20 p-4 rounded text-center">
+                    <span class="text-[10px] text-stone-500 font-bold block mb-1">誤字の回数</span>
+                    <span id="result-errors" class="text-2xl font-black text-red-800 font-brush">0</span> <span class="text-xs text-stone-500">回</span>
+                </div>
+            </div>
+
+            <!-- Actions buttons styled like parchment labels -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="shareScore()" class="flex-1 bg-stone-100 hover:bg-stone-200 border-2 border-amber-900/40 text-amber-950 font-black py-3.5 rounded transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> <span>御朱印を墨写（コピー）</span>
+                </button>
+                <button onclick="resetGame()" class="flex-1 bg-amber-900 hover:bg-amber-950 text-stone-100 font-black py-3.5 rounded transition-all flex items-center justify-center gap-2 border-b-4 border-amber-950">
+                    <i class="fa-solid fa-leaf"></i> <span>再挑戦を所望する</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Footer / Zen credits -->
+    <footer class="w-full py-4 text-center text-[10px] text-amber-900/60 font-bold z-20">
+        <p>© 2026 雅Type. 心を込めて調律された和風庵タイピング。</p>
+    </footer>
+
+    <script>
+        // Traditional audio synthesis engine
+        let kotoSynth, pluckSynth, noiseFilter, noiseSynth, polySynth, traditionalEcho;
+        let audioInitialized = false;
+
+        function initializeTraditionalAudio() {
+            try {
+                Tone.start();
+
+                // Pluck Synth representing the snappy tension of Koto strings (琴)
+                kotoSynth = new Tone.PluckSynth({
+                    attackNoise: 1.8,
+                    dampening: 3500,
+                    resonance: 0.94
+                }).toDestination();
+
+                // Additional Pluck Synth with slightly different timbre for Shishiodoshi and wooden beats
+                pluckSynth = new Tone.PluckSynth({
+                    attackNoise: 2.2,
+                    dampening: 4500,
+                    resonance: 0.8
+                }).toDestination();
+
+                // Error noise representing a shaky, detuned string pluck
+                noiseFilter = new Tone.Filter({
+                    frequency: 180,
+                    type: "bandpass",
+                    Q: 6
+                }).toDestination();
+
+                noiseSynth = new Tone.NoiseSynth({
+                    noise: { type: 'pink' },
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.15,
+                        sustain: 0
+                    }
+                }).connect(noiseFilter);
+
+                // Ascending melodic sound delay
+                traditionalEcho = new Tone.FeedbackDelay("6n", 0.3).toDestination();
+                
+                polySynth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: {
+                        attack: 0.01,
+                        decay: 0.15,
+                        sustain: 0.2,
+                        release: 0.4
+                    }
+                }).connect(traditionalEcho);
+
+                const storedVol = document.getElementById('volume-slider').value;
+                setVolume(storedVol);
+
+                audioInitialized = true;
+
+                // Animate overlay off smoothly
+                const overlay = document.getElementById('sound-init-overlay');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    focusCapture();
+                    resetGame();
+                }, 1000);
+
+            } catch (e) {
+                console.warn("Audio Context limitation on startup. Normalizing layout...");
+                const overlay = document.getElementById('sound-init-overlay');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => { overlay.style.display = 'none'; focusCapture(); resetGame(); }, 800);
+            }
+        }
+
+        function setVolume(db) {
+            if (!audioInitialized) return;
+            Tone.Destination.volume.value = parseFloat(db);
+        }
+
+        // Handle volume slider input change
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            const val = e.target.value;
+            setVolume(val);
+            const icon = document.getElementById('volume-icon');
+            if (val <= -28) {
+                icon.className = "fa-solid fa-volume-mute text-amber-800/60";
+            } else {
+                icon.className = "fa-solid fa-music text-amber-800";
+            }
+        });
+
+        // Romaji translation parser map
+        const ROMAN_MAP = {
+            'あ': ['a'], 'い': ['i'], 'う': ['u'], 'え': ['e'], 'お': ['o'],
+            'か': ['ka'], 'き': ['ki'], 'く': ['ku'], 'け': ['ke'], 'こ': ['ko'],
+            'さ': ['sa'], 'し': ['si', 'shi'], 'す': ['su'], 'せ': ['se'], 'そ': ['so'],
+            'た': ['ta'], 'ち': ['ti', 'chi'], 'つ': ['tu', 'tsu'], 'て': ['te'], 'と': ['to'],
+            'な': ['na'], 'に': ['ni'], 'ぬ': ['nu'], 'ね': ['ne'], 'の': ['no'],
+            'は': ['ha'], 'ひ': ['hi'], 'ふ': ['fu', 'hu'], 'へ': ['he'], 'ほ': ['ho'],
+            'ま': ['ma'], 'み': ['mi'], 'む': ['mu'], 'め': ['me'], 'も': ['mo'],
+            'や': ['ya'], 'ゆ': ['yu'], 'よ': ['yo'],
+            'ら': ['ra'], 'り': ['ri'], 'る': ['ru'], 'れ': ['re'], 'ろ': ['ro'],
+            'わ': ['wa'], 'を': ['wo'], 'ん': ['n', 'nn'],
+            'が': ['ga'], 'ぎ': ['gi'], 'ぐ': ['gu'], 'げ': ['ge'], 'ご': ['go'],
+            'ざ': ['za'], 'じ': ['zi', 'ji'], 'ず': ['zu'], 'ぜ': ['ze'], 'ぞ': ['zo'],
+            'だ': ['da'], 'ぢ': ['di'], 'づ': ['du'], 'で': ['de'], 'ど': ['do'],
+            'ば': ['ba'], 'び': ['bi'], 'ぶ': ['bu'], 'べ': ['be'], 'ぼ': ['bo'],
+            'ぱ': ['pa'], 'ぴ': ['pi'], 'ぷ': ['pu'], 'ぺ': ['pe'], 'ぽ': ['po'],
+            'ぁ': ['xa', 'la'], 'ぃ': ['xi', 'li'], 'ぅ': ['xu', 'lu'], 'ぇ': ['xe', 'le'], 'ぉ': ['xo', 'lo'],
+            'ゃ': ['xya', 'lya'], 'ゅ': ['xyu', 'lyu'], 'ょ': ['xyo', 'lyo'],
+            'っ': ['xtu', 'ltu'],
+            'ー': ['-'],
+        };
+
+        const DOUBLE_ROMAN_MAP = {
+            'きゃ': ['kya'], 'きゅ': ['kyu'], 'きょ': ['kyo'],
+            'しゃ': ['sya', 'sha'], 'しゅ': ['syu', 'shu'], 'しょ': ['syo', 'sho'],
+            'ちゃ': ['tya', 'cha'], 'ちゅ': ['tyu', 'chu'], 'ちょ': ['tyo', 'cho'],
+            'にゃ': ['nya'], 'にゅ': ['nyu'], 'にょ': ['nyo'],
+            'ひゃ': ['hya'], 'ひゅ': ['hyu'], 'ひょ': ['hyo'],
+            'みゃ': ['mya'], 'みゅ': ['myu'], 'みょ': ['myo'],
+            'りゃ': ['rya'], 'りゅ': ['ryu'], 'りょ': ['ryo'],
+            'ぎゃ': ['gya'], 'ぎゅ': ['gyu'], 'ぎょ': ['gyo'],
+            'じゃ': ['zya', 'ja', 'jya'], 'じゅ': ['zyu', 'ju', 'jyu'], 'じょ': ['zyo', 'jo', 'jyo'],
+            'びゃ': ['bya'], 'びゅ': ['byu'], 'びょ': ['byo'],
+            'ぴゃ': ['pya'], 'ぴゅ': ['pyu'], 'ぴょ': ['pyo'],
+            'ふぁ': ['fa'], 'ふぃ': ['fi'], 'ふぇ': ['fe'], 'ふぉ': ['fo'],
+            'てぃ': ['ti'], 'でぃ': ['di']
+        };
+
+        const IDIOM_DATASETS = {
+            yoji: [
+                { kanji: "一期一会", kana: "いちごいちえ", meaning: "一生に一度きりの出会い。その大切さを表す茶道の言葉。" },
+                { kanji: "花鳥風月", kana: "かちょうふうげつ", meaning: "天地自然の美しい風物。またはそれを詩歌に詠み親しむ雅な遊び。" },
+                { kanji: "明鏡止水", kana: "めいきょうしすい", meaning: "邪念がなく、澄み切って静かな心の境地。" },
+                { kanji: "温故知新", kana: "おんこちしん", meaning: "昔の事柄を学び、そこから新しい知識や道理を得ること。" },
+                { kanji: "百花繚乱", kana: "ひゃっかりょうらん", meaning: "多種多様な花が咲き乱れること。転じて、優れた人々が一時期に活躍すること。" },
+                { kanji: "行雲流水", kana: "こううんりゅうすい", meaning: "空をゆく雲や流れる水のように、物事に執着せず自然に任せること。" },
+                { kanji: "国士無双", kana: "こくしむそう", meaning: "国の中で、並び立つ者のないほど卓越した優れた人物。" },
+                { kanji: "森羅万象", kana: "しんらばんしょう", meaning: "宇宙に存在する、ありとあらゆる全てのものや現象。" },
+                { kanji: "不撓不屈", kana: "ふとうふくつ", meaning: "どのような困難や試練に直面しても、決して屈しない強い意志。" },
+                { kanji: "諸行無常", kana: "しょぎょうむじょう", meaning: "万物は常に移り変わり、永遠不滅のものは何一つないという真理。" },
+                { kanji: "切磋琢磨", kana: "せっさたくま", meaning: "互いに励まし合い、競い合って学問や技術、人格を磨き上げること。" },
+                { kanji: "画竜点睛", kana: "がりょうてんせい", meaning: "物事を完成させるために、最後に加える極めて重要な仕上げ。" },
+                { kanji: "天衣無縫", kana: "てんいむほう", meaning: "自然でわざとらしさがなく、詩や文章が完璧に美しい様子。飾らない人柄。" },
+                { kanji: "乾坤一擲", kana: "けんこんいってき", meaning: "運命を賭けて、生涯一度の天下の大勝負をすること。" },
+                { kanji: "鏡花水月", kana: "きょうかすいげつ", meaning: "鏡に映る花や水に映る月のように、目に見えても手に取れない儚い美しさ。" },
+                { kanji: "初志貫徹", kana: "しょしかんてつ", meaning: "最初に心に決めた目標や志を、最後まで変えずに貫き通すこと。" },
+                { kanji: "疾風迅雷", kana: "しっぷうじんらい", meaning: "激しい風と激しい雷のように、物事の展開がきわめて素早く激しい様子。" },
+                { kanji: "暗中模索", kana: "あんちゅうもさく", meaning: "暗闇の中で手探りするように、手がかりのない状態で試行錯誤すること。" },
+                { kanji: "臨機応変", kana: "りんきおうへん", meaning: "その時々の状況や変化に応じて、適切な手段や処置をとること。" },
+                { kanji: "呉越同舟", kana: "ごえつどうしゅう", meaning: "仲の悪い者同士が、同じ場所に居合わせたり、共通の利害のために協力すること。" },
+                { kanji: "四面楚歌", kana: "しめんそか", meaning: "周囲が全て敵や反対者であり、完全に孤立無援で助けがない状態。" },
+                { kanji: "七転八起", kana: "しちてんはっき", meaning: "何度失敗しても挫けず、立ち上がって懸命に奮闘すること。" },
+                { kanji: "電光石火", kana: "деんこうせっか", kana: "でんこうせっか", meaning: "稲妻の光や火打ち石の火花のように、きわめて動きが素早いこと。" },
+                { kanji: "神出鬼没", kana: "しんしゅつきぼつ", meaning: "鬼神のように立ち現れ、たちまち消え去る、行動が予測しがたい様子。" },
+                { kanji: "大器晩成", kana: "たいきばんせい", meaning: "偉大な人物は、実力を発揮して大成するまでに長い時間がかかるということ。" },
+                { kanji: "泰然自若", kana: "たいぜんじじゃく", meaning: "どのような非常事態に直面しても、落ち着きを失わず、平然としていること。" },
+                { kanji: "五臓六腑", kana: "ごぞうろっぷ", meaning: "体の中のすべての器官。心の底、はらわた。" },
+                { kanji: "悠々自適", kana: "ゆうゆうじてき", meaning: "世俗の煩わしさから離れ、自分の気の向くままにのんびりと暮らすこと。" },
+                { kanji: "風林火山", kana: "ふうりんかざん", meaning: "風のように早く、林のように静かに、火のように烈しく、山のように動かない軍律。" },
+                { kanji: "一網打尽", kana: "いちもうだじん", meaning: "網を一度打って群がる魚をすべて捕らえるように、一味を一挙に捕らえること。" },
+                { kanji: "臥薪嘗胆", kana: "がしんしょうたん", meaning: "将来の成功のために、長い間の苦労や耐え難い苦痛を耐え忍ぶこと。" },
+                { kanji: "起死回生", kana: "きしかいせい", meaning: "絶望的な状況から、息を吹き返して一気に勢いを取り戻すこと。" },
+                { kanji: "晴耕雨読", kana: "せいこううどく", meaning: "晴れた日には田畑を耕し、雨の日には家で書を読む、悠々自適な生活。" },
+                { kanji: "桜梅桃李", kana: "おうばいとうり", meaning: "桜、梅、桃、すももが、それぞれの美しさで咲くように、個性を輝かせること。" },
+                { kanji: "雪月風花", kana: "せつげつふうか", meaning: "自然がもたらす四季折々の美しい景色、豊かな風情のこと。" },
+                { kanji: "落花流水", kana: "らっかりゅうすい", meaning: "散る花が水に流され、水は花をのせて流れる。自然の移ろい、または相思相愛。" },
+                { kanji: "千載一遇", kana: "せんざいいちぐう", meaning: "千年に一度しか巡り会えないような、めったにない極めて恵まれた好機。" },
+                { kanji: "風光明媚", kana: "ふうこうめいび", meaning: "山や海、川などの自然の景色が清らかで、非常に美しい様子。" },
+                { kanji: "竜頭蛇尾", kana: "りゅうとうだび", meaning: "始めは竜のように勢いが盛んだが、終わりは蛇の尻尾のように細く振るわないこと。" },
+                { kanji: "一石二鳥", kana: "いっせきにちょう", meaning: "一つの石を投げて二羽の鳥を落とすように、一つの行為で二つの利益を得ること。" }
+            ],
+            wafu: [
+                { kanji: "鹿威し", kana: "ししおどし", meaning: "日本庭園で水を溜めた竹が石を打って「コーン」と音を立てる風流な装置。" },
+                { kanji: "風鈴の音", kana: "ふうりんのね", meaning: "夏の涼を呼ぶ、チリンと透き通る懐かしい硝子の音色。" },
+                { kanji: "桜吹雪", kana: "さくらふぶき", meaning: "桜の花びらが風に舞い上がり、雪のように美しく散る情景。" },
+                { kanji: "畳の香り", kana: "たたみのかおり", meaning: "い草で編まれた和室独特の、心安らぐ素朴な草の香り。" },
+                { kanji: "枯山水", kana: "かれさんすい", meaning: "水を用いず、石や砂の流れによって山水の風景を表現する禅寺の庭園。" },
+                { kanji: "お抹茶", kana: "おまっちゃ", meaning: "茶筅で丁寧に泡立て、静寂の中で嗜む濃緑の伝統茶。" },
+                { kanji: "和紙の温もり", kana: "わしのぬくもり", meaning: "職人の手仕事によって漉かれ、繊維が生きる温かな手触りの紙。" },
+                { kanji: "十五夜の月", kana: "じゅうごやのつき", meaning: "秋の澄み渡る夜空に浮かぶ、最も美しく神秘的な満月の光。" },
+                { kanji: "行灯の明かり", kana: "あんどんのあかり", meaning: "障子紙を通した、和室を優しく包み込むほのかな火の灯り。" },
+                { kanji: "床の間", kana: "とこのま", meaning: "掛け軸や四季折々の生け花を飾り、客人をもてなす和室の一画。" },
+                { kanji: "紅葉狩り", kana: "もみじがり", meaning: "秋の山野に分け入り、色鮮やかに染まった美しい紅葉を鑑賞して楽しむこと。" },
+                { kanji: "雪見障子", kana: "ゆきみしょうじ", meaning: "下半分にガラスがはめ込まれ、障子を閉めたまま雪景色を眺められる工夫がされた扉。" },
+                { kanji: "打ち水", kana: "うちみず", meaning: "夏の暑さを和らげるため、道や庭先に水をまいて涼をとる知恵。" },
+                { kanji: "三味線の音", kana: "しゃみせんのおと", meaning: "バチが胴の皮を叩く乾いた打音と、絹糸ならではの艶やかな響き。" },
+                { kanji: "線香花火", kana: "せんこうはなび", meaning: "小さく揺れる赤い火の玉から、細かな火花がパチパチと弾ける儚い花火。" }
+            ]
+        };
+
+        const TEA_EMOJIS = ["🍵", "🍡", "🍘", "🏮", "🍁", "🌸", "🏺", "🎋", "💮"];
+        const MASCOTS_REACTION = {
+            cheer: ["見事なり！", "その意気ですぞ！", "さすがは達人！", "涼やかなお琴の調べですな。", "心が澄み渡ります。"],
+            error: ["おっと、不覚！", "焦らずとも良いのですよ。", "深呼吸をして参りましょう。", "お茶でも飲んで一息入れられますよう。"]
+        };
+
+        let currentMode = 'yoji';
+        let currentWord = '';
+        let currentWordKanji = '';
+        let currentWordMeaning = '';
+        let currentWordKana = '';
+        let currentPatterns = []; // Holds roman alternative typing combinations
+        let typedInput = ''; // Matches progress in currentWord
+        let errors = 0;
+        let totalTypedKeys = 0;
+        let correctTypedKeys = 0;
+        let currentCombo = 0;
+        let maxCombo = 0;
+        let timer = null;
+        let duration = 30;
+        let timeLeft = duration;
+        let isPlaying = false;
+        let teaCollected = 0;
+        let isComposing = false; // Flag to trace active Japanese IME Composition
+
+        // Shuffle Bag logic to prevent duplicate words in a row
+        let wordQueues = {
+            yoji: [],
+            wafu: []
+        };
+
+        // Virtual Keyboard layout code translator
+        const charToKeyIdMap = {
+            'a': 'KeyA', 'b': 'KeyB', 'c': 'KeyC', 'd': 'KeyD', 'e': 'KeyE', 'f': 'KeyF', 'g': 'KeyG',
+            'h': 'KeyH', 'i': 'KeyI', 'j': 'KeyJ', 'k': 'KeyK', 'l': 'KeyL', 'm': 'KeyM', 'n': 'KeyN',
+            'o': 'KeyO', 'p': 'KeyP', 'q': 'KeyQ', 'r': 'KeyR', 's': 'KeyS', 't': 'KeyT', 'u': 'KeyU',
+            'v': 'KeyV', 'w': 'KeyW', 'x': 'KeyX', 'y': 'KeyY', 'z': 'KeyZ',
+            '-': 'Minus', ' ': 'Space'
+        };
+
+        function setTheme(theme) {
+            const body = document.documentElement;
+            body.className = "h-full"; 
+
+            document.getElementById('theme-default-btn').style.borderColor = 'transparent';
+            document.getElementById('theme-urushi-btn').style.borderColor = 'transparent';
+            document.getElementById('theme-chikurin-btn').style.borderColor = 'transparent';
+            document.getElementById('theme-yoiyami-btn').style.borderColor = 'transparent';
+
+            if (theme === 'urushi') {
+                body.classList.add('theme-urushi');
+                document.getElementById('theme-urushi-btn').style.borderColor = '#ffcf40';
+            } else if (theme === 'chikurin') {
+                body.classList.add('theme-chikurin');
+                document.getElementById('theme-chikurin-btn').style.borderColor = '#c9a44c';
+            } else if (theme === 'yoiyami') {
+                body.classList.add('theme-yoiyami');
+                document.getElementById('theme-yoiyami-btn').style.borderColor = '#f39c12';
+            } else {
+                document.getElementById('theme-default-btn').style.borderColor = '#5c4033';
+            }
+        }
+
+        function setThemeRandomly() {
+            const themes = ['default', 'urushi', 'chikurin', 'yoiyami'];
+            const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+            setTheme(randomTheme);
+            triggerShishiodoshiAnimation();
+        }
+
+        function setTypingMode(mode) {
+            currentMode = mode;
+            const btnYoji = document.getElementById('mode-yoji');
+            const btnWafu = document.getElementById('mode-wafu');
+
+            if (mode === 'yoji') {
+                btnYoji.className = "px-4 py-1.5 rounded text-xs font-black transition-all bg-amber-900 text-white shadow";
+                btnWafu.className = "px-4 py-1.5 rounded text-xs font-black transition-all text-amber-900 hover:text-amber-950";
+                document.getElementById('mode-badge').innerHTML = `<i class="fa-solid fa-wind mr-1.5 animate-pulse"></i>四字熟語の書`;
+            } else {
+                btnWafu.className = "px-4 py-1.5 rounded text-xs font-black transition-all bg-amber-900 text-white shadow";
+                btnYoji.className = "px-4 py-1.5 rounded text-xs font-black transition-all text-amber-900 hover:text-amber-950";
+                document.getElementById('mode-badge').innerHTML = `<i class="fa-solid fa-pagelines mr-1.5 animate-pulse"></i>和の情景`;
+            }
+            focusCapture();
+            resetGame();
+        }
+
+        function talkMascot(isError = false) {
+            const list = isError ? MASCOTS_REACTION.error : MASCOTS_REACTION.cheer;
+            const msg = list[Math.floor(Math.random() * list.length)];
+            const bubble = document.getElementById('mascot-bubble');
+            const mascot = document.getElementById('mascot-img');
+
+            bubble.textContent = msg;
+            
+            // Mascot jump animation
+            mascot.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                mascot.style.transform = 'translateY(0)';
+            }, 250);
+        }
+
+        // Tokenizes Hiragana to allow multiple Roman routes dynamically (e.g. si & shi)
+        function tokenizeKana(kana) {
+            const tokens = [];
+            let i = 0;
+            while (i < kana.length) {
+                const char1 = kana[i];
+                const char2 = kana[i + 1];
+
+                // Double character sounds (like しゃ、しゅ、しょ)
+                if (char2 && DOUBLE_ROMAN_MAP[char1 + char2]) {
+                    tokens.push([...DOUBLE_ROMAN_MAP[char1 + char2]]);
+                    i += 2;
+                    continue;
+                }
+
+                // Double consonants (促音 っ)
+                if (char1 === 'っ') {
+                    if (char2) {
+                        const char3 = kana[i + 2];
+                        let nextRomanCandidates = [];
+                        let skipCount = 1;
+
+                        if (char3 && DOUBLE_ROMAN_MAP[char2 + char3]) {
+                            nextRomanCandidates = DOUBLE_ROMAN_MAP[char2 + char3];
+                            skipCount = 2;
+                        } else if (ROMAN_MAP[char2]) {
+                            nextRomanCandidates = ROMAN_MAP[char2];
+                            skipCount = 1;
+                        }
+
+                        if (nextRomanCandidates.length > 0) {
+                            const sokuonCandidates = nextRomanCandidates.map(r => r[0]);
+                            const uniqueSokuon = [...new Set(sokuonCandidates)];
+                            
+                            const combinedCandidates = [];
+                            uniqueSokuon.forEach(s => {
+                                nextRomanCandidates.forEach(n => {
+                                    if (n[0] === s) {
+                                        combinedCandidates.push(s + n);
+                                    }
+                                });
+                            });
+                            
+                            tokens.push(combinedCandidates);
+                            i += 1 + skipCount;
+                            continue;
+                        }
+                    }
+                    tokens.push([...ROMAN_MAP['っ']]);
+                    i += 1;
+                    continue;
+                }
+
+                // Single standard characters
+                if (ROMAN_MAP[char1]) {
+                    tokens.push([...ROMAN_MAP[char1]]);
+                    i += 1;
+                    continue;
+                }
+
+                // Keep unchanged for unrecognized letters
+                tokens.push([char1]);
+                i += 1;
+            }
+            return tokens;
+        }
+
+        // Generate all roman spelling branches (Recursive DFS)
+        function generateAllPatterns(tokens) {
+            let results = [""];
+            for (let i = 0; i < tokens.length; i++) {
+                const nextResults = [];
+                const candidates = tokens[i];
+                for (let r of results) {
+                    for (let c of candidates) {
+                        nextResults.push(r + c);
+                    }
+                }
+                results = nextResults;
+            }
+            return results;
+        }
+
+        function triggerShishiodoshiAnimation() {
+            const svg = document.getElementById('bamboo-pipe');
+            svg.classList.add('tilt-active');
+            
+            // Bamboo clack sound timing (shishiodoshi strike)
+            setTimeout(() => {
+                playClackSound();
+            }, 800);
+
+            setTimeout(() => {
+                svg.classList.remove('tilt-active');
+            }, 1800);
+        }
+
+        function createSakuraPetals() {
+            const body = document.body;
+            // Spawn 5 persistent falling petals
+            for (let i = 0; i < 5; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'skin-petal sakura-petal';
+                petal.style.left = `${Math.random() * 90}vw`;
+                petal.style.animationDelay = `${Math.random() * 8}s`;
+                petal.style.width = `${Math.random() * 10 + 6}px`;
+                petal.style.height = `${Math.random() * 14 + 10}px`;
+                body.appendChild(petal);
+            }
+        }
+
+        function selectNewWord() {
+            // Check if queue is empty or needs initializing
+            if (!wordQueues[currentMode] || wordQueues[currentMode].length === 0) {
+                // Shuffle data set
+                const dataSet = [...IDIOM_DATASETS[currentMode]];
+                // Fisher-Yates Shuffle
+                for (let i = dataSet.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [dataSet[i], dataSet[j]] = [dataSet[j], dataSet[i]];
+                }
+                wordQueues[currentMode] = dataSet;
+            }
+
+            // Get next word from queue
+            const wordObj = wordQueues[currentMode].shift();
+            currentWordKanji = wordObj.kanji;
+            currentWordKana = wordObj.kana;
+            currentWordMeaning = wordObj.meaning;
+
+            // Translate kana to initial romaji combinations
+            const tokens = tokenizeKana(currentWordKana);
+            currentPatterns = generateAllPatterns(tokens);
+
+            // Default to the first pattern as the active typing baseline
+            currentWord = currentPatterns[0];
+            typedInput = '';
+        }
+
+        function updateDisplayHTML() {
+            // Update Kanji, reading, and meaning
+            document.getElementById('idiom-kanji').textContent = currentWordKanji;
+            document.getElementById('idiom-meaning').textContent = currentWordMeaning;
+            document.getElementById('kana-reading').textContent = currentWordKana;
+
+            // Render interactive Romaji with highlighted letters
+            const displayContainer = document.getElementById('typing-text-display');
+            displayContainer.innerHTML = '';
+
+            const typedPart = currentWord.substring(0, typedInput.length);
+            const remainingPart = currentWord.substring(typedInput.length);
+
+            const spanTyped = document.createElement('span');
+            spanTyped.className = 'text-emerald-600 dark:text-emerald-400 opacity-60';
+            spanTyped.textContent = typedPart;
+            displayContainer.appendChild(spanTyped);
+
+            if (remainingPart.length > 0) {
+                const spanNext = document.createElement('span');
+                spanNext.className = 'text-amber-500 underline decoration-2 decoration-amber-500 font-bold';
+                spanNext.textContent = remainingPart.charAt(0);
+
+                const spanRest = document.createElement('span');
+                spanRest.className = 'text-stone-400 dark:text-stone-600';
+                spanRest.textContent = remainingPart.substring(1);
+
+                displayContainer.appendChild(spanNext);
+                displayContainer.appendChild(spanRest);
+
+                // Update Next Key Trigger Cue Box
+                const nextChar = remainingPart.charAt(0).toUpperCase();
+                document.getElementById('next-character-hint').classList.remove('hidden');
+                document.getElementById('hint-key').textContent = nextChar === ' ' ? 'SPACE' : nextChar;
+            } else {
+                document.getElementById('next-character-hint').classList.add('hidden');
+            }
+
+            // Update Progress bar (tea fluid) inside the current word
+            const totalChars = currentWord.length;
+            const typedChars = typedInput.length;
+            const percentage = totalChars > 0 ? (typedChars / totalChars) * 100 : 0;
+            document.getElementById('stat-progress').style.width = `${percentage}%`;
+        }
+
+        function highlightTargetKey() {
+            // Clear all previous target highlights
+            document.querySelectorAll('.wood-keycap').forEach(el => {
+                el.classList.remove('target');
+            });
+
+            const remainingPart = currentWord.substring(typedInput.length);
+            if (remainingPart.length > 0) {
+                const nextChar = remainingPart.charAt(0).toLowerCase();
+                const keyId = charToKeyIdMap[nextChar];
+                if (keyId) {
+                    const keyElement = document.getElementById(`key-${keyId}`);
+                    if (keyElement) {
+                        keyElement.classList.add('target');
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            if (timer) clearInterval(timer);
+
+            // Hide sliding doors immediately
+            document.getElementById('fusuma-left-door').classList.remove('closed');
+            document.getElementById('fusuma-right-door').classList.remove('closed');
+            document.getElementById('ime-warning-box').classList.add('hidden');
+
+            const resOverlay = document.getElementById('result-overlay');
+            resOverlay.classList.add('opacity-0', 'pointer-events-none');
+            resOverlay.querySelector('.shoji-panel').style.transform = 'translateY(48px)';
+
+            timeLeft = duration;
+            isPlaying = false;
+            typedInput = '';
+            errors = 0;
+            totalTypedKeys = 0;
+            correctTypedKeys = 0;
+            currentCombo = 0;
+            maxCombo = 0;
+            teaCollected = 0;
+
+            document.getElementById('stat-time').textContent = `${timeLeft}秒`;
+            document.getElementById('stat-wpm').textContent = "0";
+            document.getElementById('stat-accuracy').textContent = "100%";
+            document.getElementById('stat-keys').innerHTML = `0<span class="text-xs text-stone-400 font-sans">/0</span>`;
+            document.getElementById('stat-combo').textContent = "0";
+            document.getElementById('stat-progress').style.width = "0%";
+            document.getElementById('tea-count').textContent = "0";
+
+            selectNewWord();
+            updateDisplayHTML();
+
+            // Clear visual keyboards
+            document.querySelectorAll('.wood-keycap').forEach(el => {
+                el.classList.remove('active', 'target');
+            });
+            highlightTargetKey();
+            focusCapture();
+        }
+
+        function focusCapture() {
+            const inp = document.getElementById('keyboard-capture');
+            inp.focus();
+        }
+
+        // Capture input fields elements for IME tracking
+        const captureInput = document.getElementById('keyboard-capture');
+
+        captureInput.addEventListener('compositionstart', () => {
+            isComposing = true;
+            document.getElementById('ime-warning-box').classList.remove('hidden');
+        });
+
+        captureInput.addEventListener('compositionend', (e) => {
+            isComposing = false;
+            captureInput.value = '';
+            setTimeout(() => {
+                if (!isComposing) {
+                    document.getElementById('ime-warning-box').classList.add('hidden');
+                }
+            }, 1000);
+        });
+
+        captureInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val.length === 0) return;
+
+            // Check if input contains Japanese double-byte character patterns
+            if (/[^\x01-\x7E]/.test(val)) {
+                document.getElementById('ime-warning-box').classList.remove('hidden');
+                e.target.value = '';
+                return;
+            } else {
+                if (!isComposing) {
+                    document.getElementById('ime-warning-box').classList.add('hidden');
+                }
+            }
+
+            const charPressed = val[val.length - 1];
+            e.target.value = '';
+
+            if (timeLeft <= 0) return;
+
+            if (!isPlaying) {
+                startTimer();
+                isPlaying = true;
+            }
+
+            processKeyInput(charPressed);
+        });
+
+        // Event Listeners for real hardware keyboard active states
+        window.addEventListener('keydown', (e) => {
+            const keyElement = document.getElementById(`key-${e.code}`);
+            if (keyElement) {
+                keyElement.classList.add('active');
+                focusCapture();
+            }
+            if (e.code === 'Space') {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const keyElement = document.getElementById(`key-${e.code}`);
+            if (keyElement) {
+                keyElement.classList.remove('active');
+            }
+        });
+
+        function playKotoSound(isCorrect) {
+            if (!audioInitialized) return;
+
+            try {
+                if (isCorrect) {
+                    // Pure traditional Pentatonic pluck scale (お琴)
+                    const scales = [293.66, 329.63, 392.00, 440.00, 493.88, 587.33, 659.25]; // D4, E4, G4, A4, B4, D5, E5
+                    const index = (currentCombo) % scales.length;
+                    const pitch = scales[index] * (currentCombo > 7 ? 2 : 1);
+                    kotoSynth.triggerAttackRelease(pitch, "0.08");
+                } else {
+                    // Shaky detuned error pluck string
+                    noiseFilter.frequency.value = 140;
+                    noiseSynth.triggerAttackRelease("0.18");
+                }
+            } catch (err) {}
+        }
+
+        function playClackSound() {
+            if (!audioInitialized) return;
+            try {
+                pluckSynth.triggerAttackRelease(180, "0.04");
+                setTimeout(() => {
+                    pluckSynth.triggerAttackRelease(140, "0.02");
+                }, 40);
+            } catch (e) {}
+        }
+
+        function playJapaneseTraditionalWin() {
+            if (!audioInitialized) return;
+            try {
+                // Ascending Japanese In-Senpo scale (陰旋法) chord cascade!
+                const now = Tone.now();
+                const notes = ["D4", "Eb4", "G4", "A4", "Bb4", "D5"];
+                notes.forEach((note, i) => {
+                    polySynth.triggerAttackRelease(note, "0.3", now + (i * 0.08));
+                });
+            } catch (err) {}
+        }
+
+        function processKeyInput(char) {
+            const nextInput = typedInput + char;
+            
+            // Check if this input matches ANY prefix of allowed spelling variations
+            const isMatched = currentPatterns.some(p => p.startsWith(nextInput));
+            totalTypedKeys++;
+
+            if (isMatched) {
+                typedInput = nextInput;
+                correctTypedKeys++;
+                currentCombo++;
+                if (currentCombo > maxCombo) maxCombo = currentCombo;
+
+                playKotoSound(true);
+                spawnInkAndGoldParticles();
+
+                // Dynamic spelling adaptation
+                const matchedPattern = currentPatterns.find(p => p.startsWith(typedInput));
+                currentWord = matchedPattern; 
+
+                // Current Word Complete Sequence
+                if (typedInput === currentWord) {
+                    teaCollected++;
+                    document.getElementById('tea-count').textContent = teaCollected;
+                    
+                    playJapaneseTraditionalWin();
+                    talkMascot(false);
+                    triggerShishiodoshiAnimation();
+                    selectNewWord();
+                }
+            } else {
+                errors++;
+                currentCombo = 0;
+                playKotoSound(false);
+                talkMascot(true);
+
+                // Shoji wooden shaker layout feedback
+                const container = document.querySelector('.tatami-edge');
+                container.classList.add('shake-active');
+                setTimeout(() => container.classList.remove('shake-active'), 250);
+            }
+
+            updateDisplayHTML();
+            highlightTargetKey();
+            calculateRealTimeMetrics();
+        }
+
+        // Spawns beautiful Japanese ink splatters & gold foil stars
+        function spawnInkAndGoldParticles() {
+            const container = document.getElementById('particles-container');
+            const rect = document.getElementById('typing-text-display').getBoundingClientRect();
+            const parentRect = container.getBoundingClientRect();
+
+            const colors = ["#1c1c1c", "#d4af37", "#ffb7c5", "#eae1cc"];
+            const icons = ["✦", "🌸", "⚫", "✿", "✦"];
+
+            for (let i = 0; i < 3; i++) {
+                const particle = document.createElement('div');
+                const col = colors[Math.floor(Math.random() * colors.length)];
+                const icon = icons[Math.floor(Math.random() * icons.length)];
+
+                particle.className = "absolute text-sm select-none pointer-events-none transition-all duration-800 ease-out font-sans";
+                particle.textContent = icon;
+                particle.style.color = col;
+
+                const startX = rect.left + (rect.width / 2) - parentRect.left + (Math.random() * 260 - 130);
+                const startY = rect.top + (rect.height / 2) - parentRect.top + (Math.random() * 40 - 20);
+
+                particle.style.left = `${startX}px`;
+                particle.style.top = `${startY}px`;
+
+                container.appendChild(particle);
+
+                const destX = startX + (Math.random() * 140 - 70);
+                const destY = startY - (Math.random() * 120 + 40);
+
+                setTimeout(() => {
+                    particle.style.transform = `translate(${destX - startX}px, ${destY - startY}px) scale(1.6) rotate(${Math.random() * 360}deg)`;
+                    particle.style.opacity = '0';
+                }, 10);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 810);
+            }
+        }
+
+        function calculateRealTimeMetrics() {
+            const secondsElapsed = duration - timeLeft;
+            const wpm = computeWPM(secondsElapsed);
+            const accuracy = computeAccuracy();
+
+            document.getElementById('stat-wpm').textContent = wpm;
+            document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('stat-keys').innerHTML = `${correctTypedKeys}<span class="text-xs text-stone-400 font-sans">/${totalTypedKeys}</span>`;
+            document.getElementById('stat-combo').textContent = currentCombo;
+        }
+
+        function computeWPM(seconds) {
+            if (seconds <= 0) return 0;
+            return Math.round((correctTypedKeys / 5) / (seconds / 60));
+        }
+
+        function computeAccuracy() {
+            if (totalTypedKeys === 0) return 100;
+            return Math.round((correctTypedKeys / totalTypedKeys) * 100);
+        }
+
+        function startTimer() {
+            const startTime = Date.now();
+            timeLeft = duration;
+
+            timer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = Math.max(duration - elapsed, 0);
+
+                document.getElementById('stat-time').textContent = `${timeLeft}秒`;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            isPlaying = false;
+
+            const doorLeft = document.getElementById('fusuma-left-door');
+            const doorRight = document.getElementById('fusuma-right-door');
+            
+            doorLeft.classList.add('closed');
+            doorRight.classList.add('closed');
+
+            if (audioInitialized) {
+                try {
+                    const now = Tone.now();
+                    polySynth.triggerAttackRelease(["C3", "G3", "C4"], "1.2", now);
+                } catch (e) {}
+            }
+
+            const finalWpm = computeWPM(duration);
+            const finalAcc = computeAccuracy();
+
+            document.getElementById('result-wpm').textContent = finalWpm;
+            document.getElementById('result-accuracy').textContent = `${finalAcc}%`;
+            document.getElementById('result-max-combo').textContent = maxCombo;
+            document.getElementById('result-errors').textContent = errors;
+
+            const tray = document.getElementById('tea-icons-container');
+            tray.innerHTML = '';
+            const count = Math.min(teaCollected, 20);
+            if (count === 0) {
+                tray.innerHTML = '<span class="text-xs text-stone-400 font-bold">まだお茶を点てておりませぬ。次回、励みましょう。</span>';
+            } else {
+                for (let i = 0; i < count; i++) {
+                    const emo = TEA_EMOJIS[Math.floor(Math.random() * TEA_EMOJIS.length)];
+                    const span = document.createElement('span');
+                    span.textContent = emo;
+                    span.className = "inline-block animate-bounce";
+                    span.style.animationDelay = `${i * 0.08}s`;
+                    tray.appendChild(span);
+                }
+            }
+
+            setTimeout(() => {
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    colors: ['#ffb7c5', '#ffe4e1', '#fff0f5', '#d4af37', '#eae1cc']
+                });
+
+                const resOverlay = document.getElementById('result-overlay');
+                resOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                resOverlay.querySelector('.shoji-panel').style.transform = 'translateY(0)';
+            }, 1200);
+        }
+
+        function shareScore() {
+            const finalWpm = document.getElementById('result-wpm').textContent;
+            const finalAcc = document.getElementById('result-accuracy').textContent;
+            const textToCopy = `【雅Type】庵の和風四字熟語タイピングにて修練を終えました。\n🍵 淹れたてのお茶: ${teaCollected}煎（杯）\n✒️ 運筆速度: ${finalWpm} WPM\n🌸 正鵠（正確さ）: ${finalAcc}\n#雅Type #タイピングゲーム #四字熟語`;
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            const btnSpan = document.querySelector('#result-overlay button span');
+            const originalText = btnSpan.textContent;
+            btnSpan.textContent = "墨写いたしました！";
+            setTimeout(() => {
+                btnSpan.textContent = originalText;
+            }, 2000);
+        }
+
+        window.onload = function() {
+            createSakuraPetals();
+        };
+    </script>
+</body>
+</html>

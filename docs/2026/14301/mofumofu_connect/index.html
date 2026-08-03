@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>もふもふコネクト - 可愛いパズルゲーム</title>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js for retro/cute synth sound effects and BGM -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- FontAwesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cute Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #ffeef2;
+        }
+        @keyframes jelly {
+            0%, 100% { transform: scale(1, 1); }
+            25% { transform: scale(0.9, 1.1); }
+            50% { transform: scale(1.1, 0.9); }
+            75% { transform: scale(0.95, 1.05); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(3deg); }
+        }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        @keyframes star-burst {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+        .animate-jelly {
+            animation: jelly 0.6s ease-in-out;
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 2s ease-in-out infinite;
+        }
+        /* Custom scrollbar just in case */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffeef2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffb7c5;
+            border-radius: 999px;
+        }
+        /* Grid cell and line overlay styling */
+        .board-container {
+            position: relative;
+            touch-action: none; /* Prevents scrolling while dragging on mobile */
+        }
+        .connector-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+        /* Glowing effects */
+        .glow-pink {
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
+        }
+        .glow-fever {
+            animation: fever-rainbow 2s linear infinite;
+        }
+        @keyframes fever-rainbow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 107, 107, 0.8); border-color: #ff6b6b; }
+            33% { box-shadow: 0 0 15px rgba(255, 217, 61, 0.8); border-color: #ffd93d; }
+            66% { box-shadow: 0 0 15px rgba(108, 92, 231, 0.8); border-color: #6c5ce7; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-x-hidden text-neutral-800">
+
+    <!-- Main App Container -->
+    <div id="app" class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border-8 border-[#ffccd5] overflow-hidden flex flex-col justify-between relative min-h-[600px] md:min-h-[700px] max-h-[90vh]">
+        
+        <!-- Rainbow Top Border Decorator -->
+        <div class="h-3 w-full bg-gradient-to-r from-pink-300 via-orange-300 to-yellow-300"></div>
+
+        <!-- ==================== START SCREEN ==================== -->
+        <div id="start-screen" class="flex-1 flex flex-col items-center justify-between p-6 text-center z-10">
+            <div class="mt-8">
+                <span class="inline-block px-4 py-1.5 bg-[#ffeef2] text-[#ff6b8b] font-bold rounded-full text-sm tracking-wider animate-pulse-slow mb-4 border border-[#ffccd5]">
+                    ✨ 超かんたん爽快パズル ✨
+                </span>
+                <h1 class="text-4xl md:text-5xl font-black text-[#ff5c7c] drop-shadow-sm tracking-wide leading-tight">
+                    もふもふ<br><span class="text-3xl md:text-4xl text-[#ffa35c]">コネクト！</span>
+                </h1>
+                
+                <!-- Cute Mascot Animation -->
+                <div class="my-8 relative flex justify-center items-center">
+                    <div class="absolute w-44 h-44 bg-[#ffeef2] rounded-full -z-10 animate-pulse-slow"></div>
+                    <div class="text-7xl md:text-8xl animate-float filter drop-shadow-md">🐰</div>
+                    <div class="absolute -top-2 -right-2 text-3xl animate-bounce" style="animation-delay: 0.5s">✨</div>
+                    <div class="absolute -bottom-2 -left-2 text-3xl animate-bounce" style="animation-delay: 1s">🍭</div>
+                </div>
+            </div>
+
+            <div class="w-full space-y-4 mb-4">
+                <div class="bg-[#fdf6f0] p-4 rounded-2xl border-2 border-dashed border-[#ffd2a1] text-left text-xs sm:text-sm text-neutral-600">
+                    <p class="font-bold text-[#e67e22] mb-1"><i class="fa-solid fa-star mr-1"></i>あそびかた</p>
+                    <p>・同じ種類の「もふもふ」をなぞって3つつなげてね！</p>
+                    <p>・ななめにも繋げられるよ！</p>
+                    <p>・4つ以上繋げると、強力な「ボム」が登場！</p>
+                    <p>・制限時間は60秒。たくさん繋げて高得点を狙おう！</p>
+                </div>
+
+                <button id="btn-start" class="w-full py-4 bg-gradient-to-r from-[#ff6b8b] to-[#ff8e53] hover:from-[#ff5c7c] hover:to-[#ff7e3d] text-white text-xl font-extrabold rounded-2xl shadow-lg shadow-pink-200 transform active:scale-95 transition-all border-b-4 border-[#cc4e64]">
+                    <i class="fa-solid fa-play mr-2"></i>スタートする！
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== PLAY SCREEN ==================== -->
+        <div id="play-screen" class="hidden flex-1 flex flex-col justify-between p-3 sm:p-4 z-10 select-none">
+            
+            <!-- Top Status Bar (Score, Timer, Fever) -->
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <!-- Score Block -->
+                <div class="bg-[#ffeef2] px-3 py-1.5 rounded-2xl border border-[#ffccd5] flex-1">
+                    <div class="text-[10px] text-[#ff6b8b] font-bold uppercase tracking-wider">SCORE</div>
+                    <div id="score-display" class="text-xl sm:text-2xl font-black text-[#ff4c70]">0</div>
+                </div>
+
+                <!-- Timer Block -->
+                <div class="bg-[#f0f9ff] px-4 py-1.5 rounded-2xl border border-[#bae6fd] flex-1 flex flex-col items-center justify-center min-w-[90px]">
+                    <div class="text-[10px] text-sky-500 font-bold tracking-wider">TIME LEFT</div>
+                    <div id="timer-display" class="text-xl sm:text-2xl font-black text-sky-600">60</div>
+                </div>
+
+                <!-- Controls & Audio -->
+                <div class="flex gap-1">
+                    <button id="btn-sound" class="w-10 h-10 bg-white hover:bg-neutral-50 rounded-2xl border-2 border-neutral-200 flex items-center justify-center text-neutral-500 transition-colors">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <button id="btn-pause" class="w-10 h-10 bg-white hover:bg-neutral-50 rounded-2xl border-2 border-neutral-200 flex items-center justify-center text-neutral-500 transition-colors">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fever Progress Bar -->
+            <div class="w-full bg-neutral-100 h-3 rounded-full overflow-hidden border border-neutral-200 mb-2 relative">
+                <div id="fever-bar" class="h-full bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 transition-all duration-300 w-0"></div>
+                <div id="fever-tag" class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-white tracking-widest opacity-0 uppercase">🔥 FEVER TIME 🔥</div>
+            </div>
+
+            <!-- Puzzle Board Section -->
+            <div class="flex-1 flex items-center justify-center py-1">
+                <div class="board-container w-full aspect-square bg-[#ffeef2] rounded-3xl border-4 border-[#ffccd5] overflow-hidden p-2 grid grid-cols-7 grid-rows-7 gap-1" id="puzzle-board">
+                    <!-- SVG Overlay for connection line -->
+                    <svg class="connector-svg" id="connector-svg"></svg>
+                    <!-- Cells will be generated here by Javascript -->
+                </div>
+            </div>
+
+            <!-- Bottom Prompt / Instructions -->
+            <div class="text-center mt-2">
+                <p id="hint-text" class="text-xs text-neutral-400 font-bold flex items-center justify-center gap-1">
+                    <span>🍭 おなじ もふもふ をなぞって繋げてね！</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== RESULT SCREEN ==================== -->
+        <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-between p-6 text-center z-10">
+            <div class="mt-6 w-full">
+                <span class="inline-block px-4 py-1.5 bg-[#f0fdf4] text-emerald-600 font-bold rounded-full text-xs sm:text-sm tracking-wider mb-2 border border-emerald-200">
+                    🎉 おつかれさまでした！
+                </span>
+                <h2 class="text-3xl font-black text-[#ff5c7c]">ゲーム結果</h2>
+
+                <!-- Final Score Box -->
+                <div class="bg-gradient-to-br from-[#fff0f3] to-[#fff9f0] p-6 rounded-[2rem] border-4 border-[#ffccd5] my-6 relative overflow-hidden">
+                    <div class="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">FINAL SCORE</div>
+                    <div id="final-score" class="text-5xl font-black text-[#ff4c70] drop-shadow-sm">0</div>
+                    
+                    <div id="new-record-badge" class="hidden absolute top-2 right-2 bg-yellow-400 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full rotate-12 animate-bounce border-2 border-white shadow-md">
+                        NEW RECORD!
+                    </div>
+
+                    <div class="border-t border-dashed border-[#ffccd5] mt-4 pt-4 flex justify-around text-xs text-neutral-600">
+                        <div>
+                            <span class="block text-[#a0a0a0]">消した数</span>
+                            <span id="stat-cleared" class="font-bold text-lg text-[#ff8e53]">0</span>
+                        </div>
+                        <div>
+                            <span class="block text-[#a0a0a0]">最大コンボ</span>
+                            <span id="stat-combo" class="font-bold text-lg text-indigo-500">0</span>
+                        </div>
+                        <div>
+                            <span class="block text-[#a0a0a0]">ハイスコア</span>
+                            <span id="stat-highscore" class="font-bold text-lg text-emerald-500">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cute encouragement message -->
+                <p id="eval-message" class="text-sm font-bold text-[#e67e22] px-4 py-2 bg-orange-50 rounded-xl border border-orange-100 inline-block mb-4">
+                    素晴らしいもふもふコネクター！🐰
+                </p>
+            </div>
+
+            <div class="w-full space-y-3 mb-2">
+                <button id="btn-retry" class="w-full py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-lg font-extrabold rounded-2xl shadow-md transition-all border-b-4 border-emerald-600 active:scale-95">
+                    <i class="fa-solid fa-rotate-left mr-2"></i>もういちど遊ぶ
+                </button>
+                <button id="btn-share" class="w-full py-3 bg-sky-400 hover:bg-sky-500 text-white text-sm font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> 結果をクリップボードにコピー
+                </button>
+                <button id="btn-to-title" class="w-full py-2.5 text-neutral-400 hover:text-neutral-600 text-xs font-bold transition-all">
+                    タイトルに戻る
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== PAUSE MODAL ==================== -->
+        <div id="pause-modal" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 text-center">
+            <div class="space-y-6">
+                <div class="text-6xl animate-bounce">⏸️</div>
+                <h3 class="text-2xl font-black text-neutral-700">ゲーム一時停止中</h3>
+                <p class="text-sm text-neutral-400 font-bold">ひとやすみして、準備ができたら再開してね！</p>
+                <div class="space-y-3 w-56 mx-auto">
+                    <button id="btn-resume" class="w-full py-3 bg-[#ff6b8b] hover:bg-[#ff5c7c] text-white font-extrabold rounded-xl shadow-md border-b-4 border-[#cc4e64] transition-all">
+                        ゲームを続ける
+                    </button>
+                    <button id="btn-restart-mid" class="w-full py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-xl transition-all text-sm">
+                        はじめからやり直す
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Little bottom copy/footer -->
+        <div class="py-2.5 bg-neutral-50 border-t border-neutral-100 text-[10px] text-neutral-400 font-bold text-center flex items-center justify-center gap-1">
+            <span>Mofumofu Connect © 2026</span>
+            <span>•</span>
+            <span>Made with ✨ & ❤️</span>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const GRID_SIZE = 7; // 7x7 grid
+        const ANIMAL_TYPES = [
+            { id: 'bunny', emoji: '🐰', color: '#ffccd5', glow: 'rgba(255, 105, 180, 0.4)', soundNote: 'C4' },
+            { id: 'bear', emoji: '🐻', color: '#ffe4c4', glow: 'rgba(210, 105, 30, 0.3)', soundNote: 'D4' },
+            { id: 'kitty', emoji: '🐱', color: '#ffecd1', glow: 'rgba(255, 165, 0, 0.3)', soundNote: 'E4' },
+            { id: 'panda', emoji: '🐼', color: '#f1f5f9', glow: 'rgba(100, 116, 139, 0.3)', soundNote: 'G4' },
+            { id: 'frog', emoji: '🐸', color: '#dcfce7', glow: 'rgba(34, 197, 94, 0.3)', soundNote: 'A4' }
+        ];
+
+        // Special items
+        const BOMB_ITEM = { id: 'bomb', emoji: '🍭', color: '#f3e8ff', glow: 'rgba(168, 85, 247, 0.5)', soundNote: 'C5' };
+
+        // Game state variables
+        let score = 0;
+        let timeLeft = 60;
+        let isPlaying = false;
+        let isPaused = false;
+        let highscore = parseInt(localStorage.getItem('mofumofu_highscore') || '0');
+        
+        let boardState = []; // 2D array of cell objects
+        let currentChain = []; // Array of indices {r, c} currently connected
+        let isDragging = false;
+        let isFever = false;
+        let feverProgress = 0; // 0 to 100
+        let feverTimer = null;
+        let countdownInterval = null;
+        let totalCleared = 0;
+        let maxCombo = 0;
+        let currentCombo = 0;
+
+        // Sound Engine Settings (Tone.js)
+        let isMuted = false;
+        let synth, polySynth, noise;
+
+        // Initialize sound effects engine
+        function initAudio() {
+            if (synth) return; // Already initialized
+
+            // Cute synth for connection sound
+            synth = new Tone.Synth({
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.05, decay: 0.1, sustain: 0.3, release: 0.2 }
+            }).toDestination();
+            synth.volume.value = -6;
+
+            // Poly synth for scoring / fever / bomb explosions
+            polySynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.3 }
+            }).toDestination();
+            polySynth.volume.value = -8;
+
+            // Noise for explosion effect
+            noise = new Tone.NoiseSynth({
+                noise: { type: 'pink' },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0 }
+            }).toDestination();
+            noise.volume.value = -12;
+        }
+
+        // Play musical scale feedback based on connection length
+        function playChainSound(index) {
+            if (isMuted) return;
+            initAudio();
+            // Ascending major pentatonic scale based on length
+            const scale = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5', 'C6'];
+            const note = scale[Math.min(index, scale.length - 1)];
+            synth.triggerAttackRelease(note, '8n');
+        }
+
+        function playExplodeSound() {
+            if (isMuted) return;
+            initAudio();
+            try {
+                polySynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '4n');
+                noise.triggerAttackRelease('8n');
+            } catch (e) {}
+        }
+
+        function playFeverSound() {
+            if (isMuted) return;
+            initAudio();
+            try {
+                polySynth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '2n');
+            } catch (e) {}
+        }
+
+        function playCuteBeep(note = 'C4') {
+            if (isMuted) return;
+            initAudio();
+            try {
+                synth.triggerAttackRelease(note, '16n');
+            } catch (e) {}
+        }
+
+        // --- DOM Elements ---
+        const appContainer = document.getElementById('app');
+        const startScreen = document.getElementById('start-screen');
+        const playScreen = document.getElementById('play-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const pauseModal = document.getElementById('pause-modal');
+        const puzzleBoard = document.getElementById('puzzle-board');
+        const connectorSvg = document.getElementById('connector-svg');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const feverBar = document.getElementById('fever-bar');
+        const feverTag = document.getElementById('fever-tag');
+        const hintText = document.getElementById('hint-text');
+
+        // Buttons
+        const btnStart = document.getElementById('btn-start');
+        const btnRetry = document.getElementById('btn-retry');
+        const btnShare = document.getElementById('btn-share');
+        const btnToTitle = document.getElementById('btn-to-title');
+        const btnSound = document.getElementById('btn-sound');
+        const btnPause = document.getElementById('btn-pause');
+        const btnResume = document.getElementById('btn-resume');
+        const btnRestartMid = document.getElementById('btn-restart-mid');
+
+        // Stats Display
+        const finalScore = document.getElementById('final-score');
+        const statCleared = document.getElementById('stat-cleared');
+        const statCombo = document.getElementById('stat-combo');
+        const statHighscore = document.getElementById('stat-highscore');
+        const newRecordBadge = document.getElementById('new-record-badge');
+        const evalMessage = document.getElementById('eval-message');
+
+        // --- GAME LOOP / FLOW ---
+
+        // Start button handler
+        btnStart.addEventListener('click', async () => {
+            await Tone.start();
+            initAudio();
+            startGame();
+        });
+
+        // Retry button handler
+        btnRetry.addEventListener('click', () => {
+            startGame();
+        });
+
+        // Title screen return
+        btnToTitle.addEventListener('click', () => {
+            showScreen('start');
+        });
+
+        // Audio Toggle
+        btnSound.addEventListener('click', () => {
+            isMuted = !isMuted;
+            btnSound.innerHTML = isMuted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+            btnSound.classList.toggle('text-rose-500', isMuted);
+            playCuteBeep('G4');
+        });
+
+        // Pause Action
+        btnPause.addEventListener('click', () => {
+            pauseGame();
+        });
+
+        btnResume.addEventListener('click', () => {
+            resumeGame();
+        });
+
+        btnRestartMid.addEventListener('click', () => {
+            resumeGame();
+            startGame();
+        });
+
+        // Screen Switcher
+        function showScreen(screen) {
+            startScreen.classList.add('hidden');
+            playScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            pauseModal.classList.add('hidden');
+
+            if (screen === 'start') {
+                startScreen.classList.remove('hidden');
+            } else if (screen === 'play') {
+                playScreen.classList.remove('hidden');
+            } else if (screen === 'result') {
+                resultScreen.classList.remove('hidden');
+            }
+        }
+
+        // Initialize board UI and array
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            isPlaying = true;
+            isPaused = false;
+            isFever = false;
+            feverProgress = 0;
+            totalCleared = 0;
+            maxCombo = 0;
+            currentCombo = 0;
+            currentChain = [];
+            
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+            feverBar.style.width = '0%';
+            feverTag.style.opacity = 0;
+            
+            // Generate board data
+            generateInitialBoard();
+            renderBoard();
+
+            // Setup SVG viewport sizes
+            resizeSvgOverlay();
+
+            showScreen('play');
+            
+            // Start the main countdown
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(tick, 1000);
+            
+            playCuteBeep('C5');
+        }
+
+        // Resize SVG coordinate mapping
+        window.addEventListener('resize', resizeSvgOverlay);
+        
+        function resizeSvgOverlay() {
+            const rect = puzzleBoard.getBoundingClientRect();
+            connectorSvg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+        }
+
+        // Tick timer down
+        function tick() {
+            if (isPaused || !isPlaying) return;
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+
+            // Simple pulse animation on timer when low
+            if (timeLeft <= 10) {
+                timerDisplay.parentElement.classList.add('animate-bounce');
+                timerDisplay.classList.add('text-rose-500');
+                playCuteBeep('C5');
+            } else {
+                timerDisplay.parentElement.classList.remove('animate-bounce');
+                timerDisplay.classList.remove('text-rose-500');
+            }
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+
+            // Decay fever bar slowly over time if not in active fever
+            if (!isFever && feverProgress > 0) {
+                feverProgress = Math.max(0, feverProgress - 1.5);
+                updateFeverBar();
+            }
+        }
+
+        // Pause state handler
+        function pauseGame() {
+            if (!isPlaying) return;
+            isPaused = true;
+            pauseModal.classList.remove('hidden');
+            playCuteBeep('A3');
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            pauseModal.classList.add('hidden');
+            playCuteBeep('E4');
+        }
+
+        // Generate random, clean board states
+        function generateInitialBoard() {
+            boardState = [];
+            for (let r = 0; r < GRID_SIZE; r++) {
+                const row = [];
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    row.push(getRandomAnimal());
+                }
+                boardState.push(row);
+            }
+        }
+
+        function getRandomAnimal() {
+            // Pick a random adorable mascot
+            const index = Math.floor(Math.random() * ANIMAL_TYPES.length);
+            return { ...ANIMAL_TYPES[index], isBomb: false };
+        }
+
+        // Render data to DOM
+        function renderBoard() {
+            puzzleBoard.querySelectorAll('.grid-cell').forEach(cell => cell.remove());
+            
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const item = boardState[r][c];
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell relative aspect-square rounded-2xl flex items-center justify-center text-3xl sm:text-4xl cursor-pointer select-none transition-transform active:scale-95 duration-100 ease-out border-2 border-transparent';
+                    cell.style.backgroundColor = item.color;
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    // Create emoji/text holder
+                    const emojiDiv = document.createElement('div');
+                    emojiDiv.className = 'select-none pointer-events-none filter drop-shadow-sm';
+                    emojiDiv.textContent = item.emoji;
+                    cell.appendChild(emojiDiv);
+
+                    // If it is a bomb, add sparkle overlay
+                    if (item.isBomb) {
+                        cell.classList.add('ring-4', 'ring-purple-400', 'animate-pulse');
+                        const sparkle = document.createElement('span');
+                        sparkle.className = 'absolute -top-1 -right-1 text-base animate-bounce';
+                        sparkle.textContent = '✨';
+                        cell.appendChild(sparkle);
+                    }
+
+                    // Attach event listeners for both desktop and mobile dragging
+                    cell.addEventListener('mousedown', (e) => handleStartDrag(r, c, e));
+                    cell.addEventListener('mouseenter', () => handleHoverCell(r, c));
+                    
+                    cell.addEventListener('touchstart', (e) => handleStartDragTouch(r, c, e), { passive: false });
+                    
+                    puzzleBoard.appendChild(cell);
+                }
+            }
+        }
+
+        // Mouse/Touch connection drag handlers
+        document.addEventListener('mouseup', handleEndDrag);
+        document.addEventListener('touchend', handleEndDrag);
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+        function getCellFromTouch(touch) {
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (!element) return null;
+            const cell = element.closest('.grid-cell');
+            if (!cell) return null;
+            return {
+                r: parseInt(cell.dataset.row),
+                c: parseInt(cell.dataset.col)
+            };
+        }
+
+        function handleStartDragTouch(r, c, e) {
+            e.preventDefault(); // Stop standard scrolling
+            initAudio();
+            startChain(r, c);
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging || isPaused || !isPlaying) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const coords = getCellFromTouch(touch);
+            if (coords) {
+                handleHoverCell(coords.r, coords.c);
+            }
+        }
+
+        function handleStartDrag(r, c, e) {
+            initAudio();
+            startChain(r, c);
+        }
+
+        // Chain initialization logic
+        function startChain(r, c) {
+            if (isPaused || !isPlaying) return;
+            isDragging = true;
+            currentChain = [{ r, c }];
+            playChainSound(0);
+            updateChainVisuals();
+        }
+
+        // Hover processing (connecting pieces together)
+        function handleHoverCell(r, c) {
+            if (!isDragging || isPaused || !isPlaying) return;
+            
+            const last = currentChain[currentChain.length - 1];
+            if (last.r === r && last.c === c) return; // Same cell hover
+
+            // Check adjacent rule (King's movement - horizontal, vertical, diagonal)
+            const isAdjacent = Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
+            if (!isAdjacent) return;
+
+            const targetItem = boardState[r][c];
+            const startItem = boardState[currentChain[0].r][currentChain[0].c];
+
+            // Type match rule: Same animal species or either is a bomb
+            const typeMatch = (targetItem.id === startItem.id) || targetItem.isBomb || startItem.isBomb;
+            if (!typeMatch) return;
+
+            // Check loopbacks to back out connection
+            if (currentChain.length > 1) {
+                const secondLast = currentChain[currentChain.length - 2];
+                if (secondLast.r === r && secondLast.c === c) {
+                    // Pull back chain
+                    currentChain.pop();
+                    playChainSound(currentChain.length - 1);
+                    updateChainVisuals();
+                    return;
+                }
+            }
+
+            // Check duplication to avoid cycles
+            const alreadyInChain = currentChain.some(cell => cell.r === r && cell.c === c);
+            if (alreadyInChain) return;
+
+            // All rules passed: expand the chain
+            currentChain.push({ r, c });
+            playChainSound(currentChain.length - 1);
+            updateChainVisuals();
+        }
+
+        // Visual enhancement of active chain
+        function updateChainVisuals() {
+            // Remove previous active highlights
+            puzzleBoard.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.classList.remove('scale-110', 'rotate-3', '-rotate-3', 'ring-4', 'ring-pink-300', 'z-10');
+            });
+
+            // Highlight currently linked cells
+            currentChain.forEach((coords, idx) => {
+                const cell = getCellDom(coords.r, coords.c);
+                if (cell) {
+                    cell.classList.add('scale-110', 'z-10');
+                    cell.classList.add(idx % 2 === 0 ? 'rotate-3' : '-rotate-3');
+                    
+                    const item = boardState[coords.r][coords.c];
+                    // Dynamic colorful ring matches the active connection theme
+                    cell.classList.add('ring-4');
+                    cell.style.setProperty('--tw-ring-color', item.isBomb ? '#c084fc' : '#f472b6');
+                }
+            });
+
+            // Draw connect paths
+            drawSvgLines();
+        }
+
+        // Vector lines between cells using SVG
+        function drawSvgLines() {
+            connectorSvg.innerHTML = '';
+            if (currentChain.length < 2) return;
+
+            const boardRect = puzzleBoard.getBoundingClientRect();
+            let points = [];
+
+            currentChain.forEach(coords => {
+                const cell = getCellDom(coords.r, coords.c);
+                if (cell) {
+                    const rect = cell.getBoundingClientRect();
+                    // Center point calculation
+                    const cx = (rect.left + rect.width / 2) - boardRect.left;
+                    const cy = (rect.top + rect.height / 2) - boardRect.top;
+                    points.push(`${cx},${cy}`);
+                }
+            });
+
+            // Create beautiful glowing stroke path
+            const glowPath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            glowPath.setAttribute('points', points.join(' '));
+            glowPath.setAttribute('fill', 'none');
+            glowPath.setAttribute('stroke', isFever ? '#ff8ec7' : '#ffd1e3');
+            glowPath.setAttribute('stroke-width', '16');
+            glowPath.setAttribute('stroke-linecap', 'round');
+            glowPath.setAttribute('stroke-linejoin', 'round');
+            glowPath.setAttribute('opacity', '0.6');
+            connectorSvg.appendChild(glowPath);
+
+            const corePath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            corePath.setAttribute('points', points.join(' '));
+            corePath.setAttribute('fill', 'none');
+            corePath.setAttribute('stroke', isFever ? '#ff4c70' : '#ff85a1');
+            corePath.setAttribute('stroke-width', '8');
+            corePath.setAttribute('stroke-linecap', 'round');
+            corePath.setAttribute('stroke-linejoin', 'round');
+            connectorSvg.appendChild(corePath);
+        }
+
+        function getCellDom(r, c) {
+            return puzzleBoard.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+        }
+
+        // Drag end handling (Main board logic processor)
+        function handleEndDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            connectorSvg.innerHTML = '';
+
+            if (currentChain.length >= 3) {
+                // Clear the match and advance board
+                processChainClear();
+            } else {
+                // Not enough connections, cancel smoothly
+                cancelChainVisuals();
+            }
+            currentChain = [];
+        }
+
+        function cancelChainVisuals() {
+            puzzleBoard.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.classList.remove('scale-110', 'rotate-3', '-rotate-3', 'ring-4', 'z-10');
+                cell.style.removeProperty('--tw-ring-color');
+            });
+        }
+
+        // Match resolution and cascades
+        function processChainClear() {
+            let cellsToClear = [...currentChain];
+            const chainLength = currentChain.length;
+            
+            // Check if we hit bombs in our chain
+            let containsBomb = false;
+            let bombLocations = [];
+            
+            currentChain.forEach(coords => {
+                if (boardState[coords.r][coords.c].isBomb) {
+                    containsBomb = true;
+                    bombLocations.push(coords);
+                }
+            });
+
+            // If a bomb was triggered, blow up surrounding tiles!
+            if (containsBomb) {
+                bombLocations.forEach(bombLoc => {
+                    // Trigger explosive wipe (3x3 grid around the bomb)
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = bombLoc.r + dr;
+                            const nc = bombLoc.c + dc;
+                            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                                // Add to list if not already there
+                                if (!cellsToClear.some(cell => cell.r === nr && cell.c === nc)) {
+                                    cellsToClear.push({ r: nr, c: nc });
+                                }
+                            }
+                        }
+                    }
+                });
+                playExplodeSound();
+            }
+
+            // Create blast/star effects for each cleared cell
+            cellsToClear.forEach(coords => {
+                createParticleExplosion(coords.r, coords.c);
+            });
+
+            // Calculate score
+            const basePointsPerCell = 100;
+            let pointsGained = cellsToClear.length * basePointsPerCell;
+            
+            // Big chains earn multiplier rewards
+            if (chainLength >= 5) pointsGained = Math.round(pointsGained * 1.5);
+            if (chainLength >= 8) pointsGained = Math.round(pointsGained * 2.0);
+            
+            // Fever Multiplier
+            if (isFever) pointsGained *= 2;
+
+            score += pointsGained;
+            scoreDisplay.textContent = score;
+
+            // Animate score pulse
+            scoreDisplay.classList.add('scale-125', 'text-amber-500');
+            setTimeout(() => {
+                scoreDisplay.classList.remove('scale-125', 'text-amber-500');
+            }, 300);
+
+            // Update stats
+            totalCleared += cellsToClear.length;
+            currentCombo++;
+            if (currentCombo > maxCombo) maxCombo = currentCombo;
+
+            // Reward time extension or bonus points
+            if (chainLength >= 6) {
+                timeLeft = Math.min(60, timeLeft + 3);
+                timerDisplay.textContent = timeLeft;
+                showInGameNotification("+3秒おまけ！🕒", "sky");
+            }
+
+            // Update Fever Gauge
+            if (!isFever) {
+                feverProgress = Math.min(100, feverProgress + (chainLength * 3.5));
+                updateFeverBar();
+                if (feverProgress >= 100) {
+                    activateFever();
+                }
+            }
+
+            // Decide whether to produce a new bomb (Requires long match chains of >= 5)
+            let bombSpawnLocation = null;
+            if (chainLength >= 5) {
+                // Spawn bomb where user ended connection
+                bombSpawnLocation = currentChain[currentChain.length - 1];
+            }
+
+            // Process board cascade: Drop columns down
+            cellsToClear.sort((a, b) => a.r - b.r); // Process from top down to prevent reference issues
+            
+            // Empty cells tracker
+            const clearedSet = new Set(cellsToClear.map(c => `${c.r},${c.c}`));
+
+            // Columns loop
+            for (let c = 0; c < GRID_SIZE; c++) {
+                // Work from bottom up to shift cells down
+                let writeIndex = GRID_SIZE - 1;
+                for (let r = GRID_SIZE - 1; r >= 0; r--) {
+                    if (!clearedSet.has(`${r},${c}`)) {
+                        if (writeIndex !== r) {
+                            boardState[writeIndex][c] = boardState[r][c];
+                        }
+                        writeIndex--;
+                    }
+                }
+                
+                // Spawn new characters in upper empty slots
+                for (let r = writeIndex; r >= 0; r--) {
+                    boardState[r][c] = getRandomAnimal();
+                }
+            }
+
+            // If chain created a bomb, overwrite one of the falling cells
+            if (bombSpawnLocation) {
+                const { r, c } = bombSpawnLocation;
+                boardState[r][c] = {
+                    ...BOMB_ITEM,
+                    isBomb: true
+                };
+                showInGameNotification("🍭 ボム登場！", "purple");
+            }
+
+            // Redraw everything nicely
+            renderBoard();
+            playCuteBeep('E5');
+        }
+
+        // Visual particle generation for popping bubbles
+        function createParticleExplosion(r, c) {
+            const cell = getCellDom(r, c);
+            if (!cell) return;
+
+            const rect = cell.getBoundingClientRect();
+            const boardRect = puzzleBoard.getBoundingClientRect();
+
+            // Center of cell
+            const startX = (rect.left + rect.width / 2) - boardRect.left;
+            const startY = (rect.top + rect.height / 2) - boardRect.top;
+
+            // Generate 8 tiny star particles
+            const particleCount = 8;
+            for (let i = 0; i < particleCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'absolute text-lg select-none pointer-events-none transition-all duration-700 ease-out z-40';
+                
+                const emojis = ['✨', '⭐', '🎈', '🍭', '🌸', '💖'];
+                star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                star.style.left = `${startX}px`;
+                star.style.top = `${startY}px`;
+                star.style.transform = `translate(-50%, -50%) scale(1)`;
+
+                puzzleBoard.appendChild(star);
+
+                // Math for spreading orbit radial directions
+                const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
+                const distance = 40 + Math.random() * 50;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+
+                // Fire animation via timeout to trigger layouts
+                setTimeout(() => {
+                    star.style.left = `${startX + dx}px`;
+                    star.style.top = `${startY + dy}px`;
+                    star.style.transform = `translate(-50%, -50%) scale(0) rotate(180deg)`;
+                    star.style.opacity = '0';
+                }, 20);
+
+                // Self cleanup
+                setTimeout(() => {
+                    star.remove();
+                }, 750);
+            }
+        }
+
+        // Prompt temporary banner notifications
+        function showInGameNotification(text, colorTheme = "pink") {
+            const colors = {
+                pink: "bg-pink-100 border-pink-300 text-pink-600",
+                sky: "bg-sky-100 border-sky-300 text-sky-600",
+                purple: "bg-purple-100 border-purple-300 text-purple-600",
+                gold: "bg-yellow-100 border-yellow-300 text-yellow-600"
+            };
+
+            const banner = document.createElement('div');
+            banner.className = `absolute top-16 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full border-2 text-xs font-black shadow-md z-40 animate-bounce ${colors[colorTheme] || colors.pink}`;
+            banner.textContent = text;
+            
+            appContainer.appendChild(banner);
+            
+            setTimeout(() => {
+                banner.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => banner.remove(), 500);
+            }, 1500);
+        }
+
+        // --- FEVER SYSTEM ---
+
+        function updateFeverBar() {
+            feverBar.style.width = `${feverProgress}%`;
+        }
+
+        function activateFever() {
+            isFever = true;
+            feverProgress = 100;
+            updateFeverBar();
+            
+            // Visual indicators
+            puzzleBoard.classList.add('glow-fever', 'bg-[#fff0f5]');
+            feverTag.style.opacity = 1;
+            feverTag.classList.add('animate-pulse-slow');
+            playFeverSound();
+            showInGameNotification("🔥 フィーバータイム！！ 🔥", "gold");
+
+            // Fever lasts for 8 seconds
+            clearTimeout(feverTimer);
+            feverTimer = setInterval(() => {
+                feverProgress -= 1.25; // Gradual depletion of meter
+                updateFeverBar();
+
+                if (feverProgress <= 0) {
+                    deactivateFever();
+                }
+            }, 100);
+        }
+
+        function deactivateFever() {
+            isFever = false;
+            feverProgress = 0;
+            clearInterval(feverTimer);
+            updateFeverBar();
+
+            puzzleBoard.classList.remove('glow-fever', 'bg-[#fff0f5]');
+            feverTag.style.opacity = 0;
+            feverTag.classList.remove('animate-pulse-slow');
+            showInGameNotification("フィーバー終了 💤", "pink");
+        }
+
+        // --- END GAME & RESULTS ---
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(countdownInterval);
+            deactivateFever();
+
+            // Store high scores
+            let isNewRecord = false;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('mofumofu_highscore', highscore);
+                isNewRecord = true;
+            }
+
+            // Fill final numbers
+            finalScore.textContent = score;
+            statCleared.textContent = totalCleared;
+            statCombo.textContent = maxCombo;
+            statHighscore.textContent = highscore;
+
+            if (isNewRecord) {
+                newRecordBadge.classList.remove('hidden');
+                evalMessage.textContent = "🏅 まさかの新記録！すばらしすぎる！ 🐹";
+            } else {
+                newRecordBadge.classList.add('hidden');
+                // Cute responsive evaluation phrases
+                if (score > 15000) {
+                    evalMessage.textContent = "👑 神レベルのもふもふマスター！ 🐰";
+                } else if (score > 8000) {
+                    evalMessage.textContent = "✨ 素晴らしいコネクトテクニック！ 🐻";
+                } else {
+                    evalMessage.textContent = "🍬 のんびり可愛くコネクトできたね！ 🐤";
+                }
+            }
+
+            showScreen('result');
+            playCuteBeep('G5');
+        }
+
+        // Clipboard stats copy utility
+        btnShare.addEventListener('click', () => {
+            const shareText = `🐾 もふもふコネクト 🐾\n✨ スコア: ${score}点\n🐰 消した数: ${totalCleared}もふ\n🔥 最大コンボ: ${maxCombo}回\n\n可愛くて超かんたん一筆書きパズルゲームに挑戦しよう！\n#もふもふコネクト`;
+            
+            // Execute copy (Fallback-safe approach)
+            const tempInput = document.createElement('textarea');
+            tempInput.value = shareText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Change button color to show success
+            const origHTML = btnShare.innerHTML;
+            btnShare.innerHTML = '<i class="fa-solid fa-circle-check"></i> コピーしました！';
+            btnShare.classList.remove('bg-sky-400');
+            btnShare.classList.add('bg-emerald-500');
+
+            setTimeout(() => {
+                btnShare.innerHTML = origHTML;
+                btnShare.classList.remove('bg-emerald-500');
+                btnShare.classList.add('bg-sky-400');
+            }, 2000);
+        });
+
+    </script>
+</body>
+</html>
