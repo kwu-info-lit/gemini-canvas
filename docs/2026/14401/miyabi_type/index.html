@@ -422,19 +422,13 @@
                 <div class="absolute top-1 left-2 text-stone-400 text-xs font-black">【 和の書 】</div>
 
                 <!-- Main Idiom (Large Beautiful Kanji) -->
-                <div id="idiom-kanji" class="text-4xl md:text-5xl font-black tracking-widest text-center text-amber-950 font-brush px-4 select-none mb-1">
-                    一期一会
-                </div>
+                <div id="idiom-kanji" class="text-4xl md:text-5xl font-black tracking-widest text-center text-amber-950 font-brush px-4 select-none mb-1"></div>
 
                 <!-- Modern Translation (Meaning of the idiom) -->
-                <div id="idiom-meaning" class="text-xs font-bold text-amber-900 bg-amber-50/70 border border-amber-900/15 px-4 py-1.5 rounded max-w-lg text-center mb-4 leading-relaxed">
-                    一生に一度きりの出会い。その大切さを表した言葉。
-                </div>
+                <div id="idiom-meaning" class="text-xs font-bold text-amber-900 bg-amber-50/70 border border-amber-900/15 px-4 py-1.5 rounded max-w-lg text-center mb-4 leading-relaxed"></div>
 
                 <!-- Hiragana Readings -->
-                <div id="kana-reading" class="text-sm font-bold text-stone-500 tracking-widest mb-1 select-none">
-                    いちごいちえ
-                </div>
+                <div id="kana-reading" class="text-sm font-bold text-stone-500 tracking-widest mb-1 select-none"></div>
 
                 <!-- Romaji Interactive Sequence -->
                 <div id="typing-text-display" class="text-2xl md:text-4xl font-black tracking-widest leading-relaxed font-sans text-center max-w-4xl px-4 select-none">
@@ -654,7 +648,6 @@
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     focusCapture();
-                    resetGame();
                 }, 1000);
             }
         }
@@ -1600,6 +1593,7 @@
 
         window.onload = function() {
             createSakuraPetals();
+            resetGame();
         };
     </script>
 </body>
