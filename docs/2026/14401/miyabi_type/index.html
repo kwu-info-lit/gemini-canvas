@@ -384,14 +384,8 @@
                 </div>
             </div>
 
-            <!-- IME Active Mode Warning Alert Box -->
-            <div id="ime-warning-box" class="hidden ime-alert px-4 py-3 rounded border-2 flex items-center justify-center gap-3 text-xs md:text-sm font-black mb-4 transition-all">
-                <i class="fa-solid fa-circle-exclamation text-rose-600 text-lg animate-bounce"></i>
-                <div class="text-center sm:text-left">
-                    <p class="text-rose-900">【注意】キーボードが「日本語入力（全角あ）」になっています！</p>
-                    <p class="text-[10px] text-stone-600 font-bold">キーボードの「半角/全角」や「英数」キーを押して、「半角英数（直接入力）」に切り替えてください。</p>
-                </div>
-            </div>
+            <!-- IME Active Mode Warning Alert Box (Hidden to support full-width IME typing) -->
+            <div id="ime-warning-box" class="hidden"></div>
 
             <!-- Shishiodoshi (Deer Chaser) Mascot & Room Companion -->
             <div class="flex justify-center items-center gap-6 mb-2">
@@ -581,79 +575,112 @@
         // Traditional audio synthesis engine
         let kotoSynth, pluckSynth, noiseFilter, noiseSynth, polySynth, traditionalEcho;
         let audioInitialized = false;
+        let nativeAudioCtx = null;
+        let currentVolumeGain = 0.3;
 
-        function initializeTraditionalAudio() {
+        async function initializeTraditionalAudio() {
+            // Always initialize Native Web Audio API context for guaranteed local file sound playback
             try {
-                Tone.start();
-
-                // Pluck Synth representing the snappy tension of Koto strings (琴)
-                kotoSynth = new Tone.PluckSynth({
-                    attackNoise: 1.8,
-                    dampening: 3500,
-                    resonance: 0.94
-                }).toDestination();
-
-                // Additional Pluck Synth with slightly different timbre for Shishiodoshi and wooden beats
-                pluckSynth = new Tone.PluckSynth({
-                    attackNoise: 2.2,
-                    dampening: 4500,
-                    resonance: 0.8
-                }).toDestination();
-
-                // Error noise representing a shaky, detuned string pluck
-                noiseFilter = new Tone.Filter({
-                    frequency: 180,
-                    type: "bandpass",
-                    Q: 6
-                }).toDestination();
-
-                noiseSynth = new Tone.NoiseSynth({
-                    noise: { type: 'pink' },
-                    envelope: {
-                        attack: 0.005,
-                        decay: 0.15,
-                        sustain: 0
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    nativeAudioCtx = new AudioContextClass();
+                    if (nativeAudioCtx.state === 'suspended') {
+                        await nativeAudioCtx.resume();
                     }
-                }).connect(noiseFilter);
+                }
+            } catch (e) {}
 
-                // Ascending melodic sound delay
-                traditionalEcho = new Tone.FeedbackDelay("6n", 0.3).toDestination();
-                
-                polySynth = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "sine" },
-                    envelope: {
-                        attack: 0.01,
-                        decay: 0.15,
-                        sustain: 0.2,
-                        release: 0.4
+            try {
+                if (window.Tone) {
+                    await Tone.start();
+                    if (Tone.context && Tone.context.state !== 'running') {
+                        await Tone.context.resume().catch(() => {});
                     }
-                }).connect(traditionalEcho);
 
-                const storedVol = document.getElementById('volume-slider').value;
-                setVolume(storedVol);
+                    // Pluck Synth representing the snappy tension of Koto strings (琴)
+                    kotoSynth = new Tone.PluckSynth({
+                        attackNoise: 1.8,
+                        dampening: 3500,
+                        resonance: 0.94
+                    }).toDestination();
 
-                audioInitialized = true;
+                    // Additional Pluck Synth for Shishiodoshi and wooden beats
+                    pluckSynth = new Tone.PluckSynth({
+                        attackNoise: 2.2,
+                        dampening: 4500,
+                        resonance: 0.8
+                    }).toDestination();
 
-                // Animate overlay off smoothly
-                const overlay = document.getElementById('sound-init-overlay');
+                    // Error noise representing a shaky detuned string pluck
+                    noiseFilter = new Tone.Filter({
+                        frequency: 180,
+                        type: "bandpass",
+                        Q: 6
+                    }).toDestination();
+
+                    noiseSynth = new Tone.NoiseSynth({
+                        noise: { type: 'pink' },
+                        envelope: {
+                            attack: 0.005,
+                            decay: 0.15,
+                            sustain: 0
+                        }
+                    }).connect(noiseFilter);
+
+                    traditionalEcho = new Tone.FeedbackDelay("6n", 0.3).toDestination();
+                    
+                    polySynth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: "sine" },
+                        envelope: {
+                            attack: 0.01,
+                            decay: 0.15,
+                            sustain: 0.2,
+                            release: 0.4
+                        }
+                    }).connect(traditionalEcho);
+                }
+            } catch (e) {
+                console.warn("Tone.js fallback to Native AudioContext:", e);
+            }
+
+            const storedVol = document.getElementById('volume-slider').value;
+            setVolume(storedVol);
+            audioInitialized = true;
+
+            // Animate overlay off smoothly
+            const overlay = document.getElementById('sound-init-overlay');
+            if (overlay) {
                 overlay.classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     focusCapture();
                     resetGame();
                 }, 1000);
-
-            } catch (e) {
-                console.warn("Audio Context limitation on startup. Normalizing layout...");
-                const overlay = document.getElementById('sound-init-overlay');
-                overlay.classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => { overlay.style.display = 'none'; focusCapture(); resetGame(); }, 800);
             }
         }
 
+        function ensureAudioRunning() {
+            try {
+                if (!nativeAudioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) nativeAudioCtx = new AudioContextClass();
+                }
+                if (nativeAudioCtx && nativeAudioCtx.state === 'suspended') {
+                    nativeAudioCtx.resume().catch(() => {});
+                }
+                if (window.Tone && Tone.context && Tone.context.state !== 'running') {
+                    Tone.context.resume().catch(() => {});
+                }
+            } catch (e) {}
+        }
+
         function setVolume(db) {
-            if (!audioInitialized) return;
-            Tone.Destination.volume.value = parseFloat(db);
+            const numericDb = parseFloat(db);
+            if (window.Tone && Tone.Destination) {
+                try { Tone.Destination.volume.value = numericDb; } catch (e) {}
+            }
+            // Convert dB (-30 to 0) to linear gain (0.03 to 1.0)
+            currentVolumeGain = Math.pow(10, numericDb / 20);
         }
 
         // Handle volume slider input change
@@ -1116,9 +1143,71 @@
             focusCapture();
         }
 
+        const codeToCharMap = {
+            'KeyA': 'a', 'KeyB': 'b', 'KeyC': 'c', 'KeyD': 'd', 'KeyE': 'e', 'KeyF': 'f', 'KeyG': 'g',
+            'KeyH': 'h', 'KeyI': 'i', 'KeyJ': 'j', 'KeyK': 'k', 'KeyL': 'l', 'KeyM': 'm', 'KeyN': 'n',
+            'KeyO': 'o', 'KeyP': 'p', 'KeyQ': 'q', 'KeyR': 'r', 'KeyS': 's', 'KeyT': 't', 'KeyU': 'u',
+            'KeyV': 'v', 'KeyW': 'w', 'KeyX': 'x', 'KeyY': 'y', 'KeyZ': 'z',
+            'Minus': '-', 'Space': ' ',
+            'Digit0': '0', 'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4',
+            'Digit5': '5', 'Digit6': '6', 'Digit7': '7', 'Digit8': '8', 'Digit9': '9'
+        };
+
         function focusCapture() {
             const inp = document.getElementById('keyboard-capture');
-            inp.focus();
+            if (inp) inp.focus();
+        }
+
+        const KANA_TO_ROMAN = {
+            'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+            'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+            'さ': 'sa', 'し': 'si', 'す': 'su', 'せ': 'se', 'そ': 'so',
+            'た': 'ta', 'ち': 'ti', 'つ': 'tu', 'て': 'te', 'と': 'to',
+            'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+            'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+            'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+            'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+            'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+            'わ': 'wa', 'を': 'wo', 'ん': 'n',
+            'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+            'ざ': 'za', 'じ': 'zi', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+            'だ': 'da', 'ぢ': 'di', 'づ': 'du', 'で': 'de', 'ど': 'do',
+            'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+            'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+            'ー': '-'
+        };
+
+        let lastKeydownTime = 0;
+
+        function toHalfWidth(str) {
+            if (!str) return '';
+            return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            }).replace(/ー/g, '-').replace(/　/g, ' ').replace(/—/g, '-').replace(/–/g, '-');
+        }
+
+        function processNormalizedString(rawStr) {
+            if (!rawStr) return;
+            ensureAudioRunning();
+
+            let converted = toHalfWidth(rawStr);
+            let romanized = '';
+            for (let i = 0; i < converted.length; i++) {
+                const c = converted[i];
+                romanized += KANA_TO_ROMAN[c] || c;
+            }
+
+            for (let i = 0; i < romanized.length; i++) {
+                const char = romanized[i];
+                if (timeLeft <= 0) break;
+
+                if (!isPlaying) {
+                    startTimer();
+                    isPlaying = true;
+                }
+
+                processKeyInput(char.toLowerCase());
+            }
         }
 
         // Capture input fields elements for IME tracking
@@ -1126,49 +1215,29 @@
 
         captureInput.addEventListener('compositionstart', () => {
             isComposing = true;
-            document.getElementById('ime-warning-box').classList.remove('hidden');
         });
 
         captureInput.addEventListener('compositionend', (e) => {
             isComposing = false;
             captureInput.value = '';
-            setTimeout(() => {
-                if (!isComposing) {
-                    document.getElementById('ime-warning-box').classList.add('hidden');
-                }
-            }, 1000);
         });
 
         captureInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            if (val.length === 0) return;
+            const rawVal = e.target.value;
+            captureInput.value = '';
 
-            // Check if input contains Japanese double-byte character patterns
-            if (/[^\x01-\x7E]/.test(val)) {
-                document.getElementById('ime-warning-box').classList.remove('hidden');
-                e.target.value = '';
-                return;
-            } else {
-                if (!isComposing) {
-                    document.getElementById('ime-warning-box').classList.add('hidden');
-                }
-            }
+            // Skip duplicate fallback if keydown already handled this keystroke
+            if (Date.now() - lastKeydownTime < 50) return;
 
-            const charPressed = val[val.length - 1];
-            e.target.value = '';
-
-            if (timeLeft <= 0) return;
-
-            if (!isPlaying) {
-                startTimer();
-                isPlaying = true;
-            }
-
-            processKeyInput(charPressed);
+            if (!rawVal) return;
+            processNormalizedString(rawVal);
         });
 
-        // Event Listeners for real hardware keyboard active states
+        // Event Listeners for real hardware keyboard active states & direct key code capture
         window.addEventListener('keydown', (e) => {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            ensureAudioRunning();
             const keyElement = document.getElementById(`key-${e.code}`);
             if (keyElement) {
                 keyElement.classList.add('active');
@@ -1176,6 +1245,21 @@
             }
             if (e.code === 'Space') {
                 e.preventDefault();
+            }
+
+            const char = codeToCharMap[e.code];
+            if (char) {
+                lastKeydownTime = Date.now();
+                if (timeLeft <= 0) return;
+
+                if (!isPlaying) {
+                    startTimer();
+                    isPlaying = true;
+                }
+
+                processKeyInput(char);
+
+                if (captureInput) captureInput.value = '';
             }
         });
 
@@ -1186,44 +1270,134 @@
             }
         });
 
-        function playKotoSound(isCorrect) {
-            if (!audioInitialized) return;
+        function playNativeKotoTone(freq) {
+            ensureAudioRunning();
+            if (!nativeAudioCtx) return;
 
             try {
-                if (isCorrect) {
-                    // Pure traditional Pentatonic pluck scale (お琴)
-                    const scales = [293.66, 329.63, 392.00, 440.00, 493.88, 587.33, 659.25]; // D4, E4, G4, A4, B4, D5, E5
-                    const index = (currentCombo) % scales.length;
-                    const pitch = scales[index] * (currentCombo > 7 ? 2 : 1);
-                    kotoSynth.triggerAttackRelease(pitch, "0.08");
-                } else {
-                    // Shaky detuned error pluck string
-                    noiseFilter.frequency.value = 140;
-                    noiseSynth.triggerAttackRelease("0.18");
+                const osc = nativeAudioCtx.createOscillator();
+                const filter = nativeAudioCtx.createBiquadFilter();
+                const gain = nativeAudioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, nativeAudioCtx.currentTime);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2200, nativeAudioCtx.currentTime);
+                filter.Q.setValueAtTime(2.5, nativeAudioCtx.currentTime);
+
+                const vol = Math.max(0.01, currentVolumeGain * 0.45);
+                gain.gain.setValueAtTime(vol, nativeAudioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, nativeAudioCtx.currentTime + 0.35);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(nativeAudioCtx.destination);
+
+                osc.start();
+                osc.stop(nativeAudioCtx.currentTime + 0.35);
+            } catch (e) {}
+        }
+
+        function playNativeNoiseTone() {
+            ensureAudioRunning();
+            if (!nativeAudioCtx) return;
+
+            try {
+                const osc = nativeAudioCtx.createOscillator();
+                const gain = nativeAudioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(130, nativeAudioCtx.currentTime);
+
+                const vol = Math.max(0.01, currentVolumeGain * 0.3);
+                gain.gain.setValueAtTime(vol, nativeAudioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, nativeAudioCtx.currentTime + 0.18);
+
+                osc.connect(gain);
+                gain.connect(nativeAudioCtx.destination);
+
+                osc.start();
+                osc.stop(nativeAudioCtx.currentTime + 0.18);
+            } catch (e) {}
+        }
+
+        function playKotoSound(isCorrect) {
+            ensureAudioRunning();
+
+            const isToneActive = kotoSynth && window.Tone && Tone.context && Tone.context.state === 'running';
+
+            if (isCorrect) {
+                const scales = [293.66, 329.63, 392.00, 440.00, 493.88, 587.33, 659.25]; // D4, E4, G4, A4, B4, D5, E5
+                const index = (currentCombo) % scales.length;
+                const pitch = scales[index] * (currentCombo > 7 ? 2 : 1);
+
+                if (isToneActive) {
+                    try { kotoSynth.triggerAttackRelease(pitch, "0.08"); return; } catch (e) {}
                 }
-            } catch (err) {}
+                playNativeKotoTone(pitch);
+            } else {
+                if (isToneActive && noiseSynth) {
+                    try {
+                        noiseFilter.frequency.value = 140;
+                        noiseSynth.triggerAttackRelease("0.18");
+                        return;
+                    } catch (e) {}
+                }
+                playNativeNoiseTone();
+            }
         }
 
         function playClackSound() {
-            if (!audioInitialized) return;
+            ensureAudioRunning();
+
+            const isToneActive = pluckSynth && window.Tone && Tone.context && Tone.context.state === 'running';
+            if (isToneActive) {
+                try {
+                    pluckSynth.triggerAttackRelease(180, "0.04");
+                    setTimeout(() => pluckSynth.triggerAttackRelease(140, "0.02"), 40);
+                    return;
+                } catch (e) {}
+            }
+
+            if (!nativeAudioCtx) return;
             try {
-                pluckSynth.triggerAttackRelease(180, "0.04");
-                setTimeout(() => {
-                    pluckSynth.triggerAttackRelease(140, "0.02");
-                }, 40);
+                const osc = nativeAudioCtx.createOscillator();
+                const gain = nativeAudioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220, nativeAudioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, nativeAudioCtx.currentTime + 0.05);
+
+                const vol = Math.max(0.01, currentVolumeGain * 0.5);
+                gain.gain.setValueAtTime(vol, nativeAudioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, nativeAudioCtx.currentTime + 0.06);
+
+                osc.connect(gain);
+                gain.connect(nativeAudioCtx.destination);
+                osc.start();
+                osc.stop(nativeAudioCtx.currentTime + 0.06);
             } catch (e) {}
         }
 
         function playJapaneseTraditionalWin() {
-            if (!audioInitialized) return;
-            try {
-                // Ascending Japanese In-Senpo scale (陰旋法) chord cascade!
-                const now = Tone.now();
-                const notes = ["D4", "Eb4", "G4", "A4", "Bb4", "D5"];
-                notes.forEach((note, i) => {
-                    polySynth.triggerAttackRelease(note, "0.3", now + (i * 0.08));
-                });
-            } catch (err) {}
+            ensureAudioRunning();
+
+            const isToneActive = polySynth && window.Tone && Tone.context && Tone.context.state === 'running';
+            if (isToneActive) {
+                try {
+                    const now = Tone.now();
+                    const notes = ["D4", "Eb4", "G4", "A4", "Bb4", "D5"];
+                    notes.forEach((note, i) => {
+                        polySynth.triggerAttackRelease(note, "0.3", now + (i * 0.08));
+                    });
+                    return;
+                } catch (e) {}
+            }
+
+            const freqs = [293.66, 311.13, 392.00, 440.00, 466.16, 587.33];
+            freqs.forEach((f, i) => {
+                setTimeout(() => playNativeKotoTone(f), i * 75);
+            });
         }
 
         function processKeyInput(char) {
