@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ポップに覚える！食中毒タイピング 🦠✨</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts: Fredoka & M PLUS Rounded 1c -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background: linear-gradient(135deg, #fef9c3 0%, #ecfeff 50%, #f0fdf4 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+
+    .font-fredoka {
+      font-family: 'Fredoka', cursive;
+    }
+
+    /* 波打つアニメーション */
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 2.5s infinite ease-in-out;
+    }
+
+    /* ポップなキーボード演出 */
+    .key-cap {
+      box-shadow: 0 4px 0 #cbd5e1;
+      transition: all 0.05s ease;
+    }
+    .key-cap.pressed {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #cbd5e1;
+      background-color: #fef08a !important;
+      color: #854d0e !important;
+      font-weight: bold;
+    }
+    .key-cap.next-target {
+      background-color: #3b82f6 !important;
+      color: #ffffff !important;
+      animation: bounce-key 0.6s infinite alternate;
+      font-weight: bold;
+    }
+
+    @keyframes bounce-key {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-3px); }
+    }
+
+    /* 紙吹雪キャンバス */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* 吹き出し三角 */
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 12px 12px 0;
+      border-style: solid;
+      border-color: #ffffff transparent;
+      display: block;
+      width: 0;
+    }
+  </style>
+</head>
+<body class="text-slate-800 flex flex-col justify-between min-h-screen p-3 md:p-6 overflow-x-hidden">
+
+  <!-- 紙吹雪用キャンバス -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- ヘッダー -->
+  <header class="max-w-4xl mx-auto w-full flex flex-wrap items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-amber-100">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center text-2xl shadow-inner text-amber-900">
+        🦠
+      </div>
+      <div>
+        <h1 class="text-xl md:text-2xl font-extrabold text-amber-900 flex items-center gap-2">
+          食中毒タイピング <span class="text-xs bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full font-bold">Pop Edition</span>
+        </h1>
+        <p class="text-xs text-amber-700">タイプして食中毒の知識をGETしよう！</p>
+      </div>
+    </div>
+
+    <!-- スコア＆ステータス -->
+    <div class="flex items-center gap-3 text-sm md:text-base">
+      <div class="bg-amber-50 px-3 py-1.5 rounded-2xl border border-amber-200 flex items-center gap-2">
+        <i class="fa-solid fa-trophy text-amber-500"></i>
+        <span class="text-xs text-slate-500 font-bold">SCORE</span>
+        <span id="score-display" class="font-fredoka text-lg font-bold text-amber-900">0</span>
+      </div>
+      <div class="bg-cyan-50 px-3 py-1.5 rounded-2xl border border-cyan-200 flex items-center gap-2">
+        <i class="fa-solid fa-bolt text-cyan-500"></i>
+        <span class="text-xs text-slate-500 font-bold">WPM</span>
+        <span id="wpm-display" class="font-fredoka text-lg font-bold text-cyan-900">0</span>
+      </div>
+      <button id="sound-toggle-btn" class="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-amber-100 border border-slate-200 text-slate-600 flex items-center justify-center transition">
+        <i id="sound-icon" class="fa-solid fa-volume-high text-amber-600"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="max-w-4xl mx-auto w-full my-4 flex-1 flex flex-col justify-center items-center">
+
+    <!-- スタート画面 -->
+    <div id="start-screen" class="w-full bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-amber-200 text-center flex flex-col items-center">
+      <div class="text-6xl my-4 animate-pulse-slow">🧫🥼🧪</div>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-amber-900 mb-3">ポップに覚える！食中毒タイピング</h2>
+      <p class="text-slate-600 max-w-lg mb-6 leading-relaxed">
+        食中毒の種類（カンピロバクター、ノロウイルスなど）を入力するタイピングゲームです！<br>
+        問題が出ると<strong class="text-amber-600">名前とわかりやすい解説</strong>をAIボイスが読み上げます。<br>
+        タイピングをクリアすると説明をストップしてサクサク次へ進むよ！
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-md mb-8 text-left text-xs text-slate-600 bg-amber-50 p-4 rounded-2xl border border-amber-200">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-keyboard text-amber-500 text-base"></i>
+          <span><b>ローマ字対応:</b><br>syo / sho 両対応</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-volume-low text-amber-500 text-base"></i>
+          <span><b>AIボイス読み上げ:</b><br>打ち終われば即スキップ</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-virus text-amber-500 text-base"></i>
+          <span><b>全10問:</b><br>楽しく対策予防！</span>
+        </div>
+      </div>
+
+      <button id="start-btn" class="bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xl px-10 py-4 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-3">
+        <i class="fa-solid fa-play"></i> ゲームスタート！
+      </button>
+    </div>
+
+    <!-- ゲームプレイ画面 -->
+    <div id="game-screen" class="w-full hidden flex-col items-center gap-4">
+      
+      <!-- プログレスバー -->
+      <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden shadow-inner">
+        <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+      </div>
+
+      <!-- 食中毒カード -->
+      <div class="w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-200 flex flex-col items-center relative overflow-hidden">
+        
+        <!-- ナレーション・ボイス再生インジケーター -->
+        <div id="audio-indicator" class="absolute top-4 right-4 flex items-center gap-2 bg-amber-100 text-amber-800 text-xs px-3 py-1.5 rounded-full border border-amber-300 opacity-0 transition-opacity">
+          <i class="fa-solid fa-waveform-lines animate-pulse text-amber-600"></i>
+          <span id="audio-status-text">🔊 タイプ対象を読み上げ中...</span>
+        </div>
+
+        <!-- カテゴリバッジ -->
+        <span id="category-badge" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full mb-2">
+          細菌性食中毒
+        </span>
+
+        <!-- 日本語名称 -->
+        <h2 id="target-name" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-800 my-2 tracking-wide text-center whitespace-nowrap transition-all">
+          カンピロバクター
+        </h2>
+
+        <!-- かな表示 -->
+        <p id="target-kana" class="text-amber-600 text-base sm:text-xl md:text-2xl font-bold mb-4 whitespace-nowrap transition-all">
+          かんぴろばくたー
+        </p>
+
+        <!-- ローマ字タイピングガイド表示エリア -->
+        <div id="roman-container" class="bg-slate-900 text-white rounded-2xl px-4 md:px-6 py-3 md:py-4 my-2 w-full max-w-xl text-center shadow-inner tracking-widest font-fredoka text-lg sm:text-xl md:text-2xl flex justify-center items-center whitespace-nowrap transition-all overflow-x-auto">
+          <span id="typed-roman" class="text-emerald-400 font-bold"></span>
+          <span id="current-char-roman" class="text-amber-300 underline font-bold bg-slate-800 px-1 rounded"></span>
+          <span id="untyped-roman" class="text-slate-400"></span>
+        </div>
+
+        <!-- ナレーション吹き出し解説表示 -->
+      <div class="mt-4 w-full max-w-2xl bg-amber-50 rounded-2xl p-4 border border-amber-200 relative speech-bubble text-center">
+        <p id="description-text" class="text-sm md:text-base text-amber-950 font-medium leading-relaxed">
+          「お肉（特に鶏肉）の加熱不足から感染しやすいよ！しっかり中心まで加熱して予防しよう！」
+        </p>
+      </div>
+    </div>
+
+    <!-- 画面上オンスクリーンキーボードガイド -->
+    <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-2 sm:p-3.5 shadow-lg border border-amber-100/80 flex flex-col items-center gap-1 sm:gap-1.5 max-w-xl mx-auto">
+      <!-- 数字・長音記号行 (1-0, -) -->
+      <div class="flex justify-center gap-1 w-full" id="keyboard-row-0"></div>
+      <!-- 1行目 (Q-P) -->
+      <div class="flex justify-center gap-1 w-full" id="keyboard-row-1"></div>
+      <!-- 2行目 (A-L) -->
+      <div class="flex justify-center gap-1 w-full" id="keyboard-row-2"></div>
+      <!-- 3行目 (Z-M) -->
+      <div class="flex justify-center gap-1 w-full" id="keyboard-row-3"></div>
+      <!-- 4行目 (Space) -->
+      <div class="flex justify-center gap-1 w-full" id="keyboard-row-4"></div>
+    </div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="result-screen" class="w-full bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-amber-200 text-center hidden flex-col items-center">
+      <div class="text-6xl mb-2">🎉🏆✨</div>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-amber-900 mb-1">全問クリア！お見事！</h2>
+      <p class="text-slate-500 text-sm mb-6">これで君も食中毒マスターだね！</p>
+
+      <!-- ランクスコアカード -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-xl mb-6">
+        <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+          <p class="text-xs text-amber-700 font-bold mb-1">最終スコア</p>
+
+          <p id="final-score" class="font-fredoka text-2xl font-bold text-amber-900">0</p>
+        </div>
+        <div class="bg-cyan-50 p-4 rounded-2xl border border-cyan-200">
+          <p class="text-xs text-cyan-700 font-bold mb-1">平均 WPM</p>
+          <p id="final-wpm" class="font-fredoka text-2xl font-bold text-cyan-900">0</p>
+        </div>
+        <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+          <p class="text-xs text-emerald-700 font-bold mb-1">正確率</p>
+          <p id="final-accuracy" class="font-fredoka text-2xl font-bold text-emerald-900">100%</p>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+          <p class="text-xs text-purple-700 font-bold mb-1">評価ランク</p>
+          <p id="final-rank" class="font-fredoka text-2xl font-bold text-purple-900">S</p>
+        </div>
+      </div>
+
+      <!-- 今回学んだ食中毒一覧 -->
+      <div class="w-full max-w-xl text-left bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6 max-h-48 overflow-y-auto">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"><i class="fa-solid fa-book-open"></i> 今回登場した食中毒のおさらい</h3>
+        <ul id="summary-list" class="space-y-2 text-xs text-slate-700">
+          <!-- 動的挿入 -->
+        </ul>
+      </div>
+
+      <button id="restart-btn" class="bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xl px-10 py-4 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-3">
+        <i class="fa-solid fa-rotate-right"></i> もう一度遊ぶ！
+      </button>
+    </div>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="max-w-4xl mx-auto w-full text-center text-xs text-slate-400 py-3">
+    ポップに覚える！食中毒タイピング &copy; Educational Typing Game
+  </footer>
+
+  <script>
+    const FOOD_POISONING_DATA = [
+      {
+        name: "カンピロバクター",
+        kana: "かんぴろばくたー",
+        category: "細菌",
+        description: "鶏肉や生肉の加熱不足から感染しやすい細菌だよ！お肉は中心までしっかり熱を通して焼こうね！"
+      },
+      {
+        name: "ウエルシュ菌",
+        kana: "うえるしゅきん",
+        category: "細菌",
+        description: "カレーやシチューなど大鍋料理が大好き！作ったら放置せず、小分けにして早く冷まそう！"
+      },
+      {
+        name: "黄色ブドウ球菌",
+        kana: "おうしょくぶどうきゅうきん",
+        category: "細菌・毒素",
+        description: "人の手や傷口にいる菌だよ！手袋をして、調理の前はおにぎりも清潔な手で握ろう！"
+      },
+      {
+        name: "ノロウイルス",
+        kana: "のろういるす",
+        category: "ウイルス",
+        description: "冬に大流行する強いウイルスだよ！二枚貝の加熱不足や手洗い不足から広がるから石鹸洗いが重要！"
+      },
+      {
+        name: "サルモネラ属菌",
+        kana: "さるもねらぞくきん",
+        category: "細菌",
+        description: "卵のカラや生肉、カメなどの爬虫類に潜むよ！生卵は新鮮なうちにすぐ食べて消毒しよう！"
+      },
+      {
+        name: "腸管出血性大腸菌",
+        kana: "ちょうかんしゅっけつせいだいちょうきん",
+        category: "細菌",
+        description: "O157などで有名！激しい腹痛を引き起こすよ！生肉を触った箸で料理を食べないように注意！"
+      },
+      {
+        name: "ボツリヌス菌",
+        kana: "ぼつりぬすきん",
+        category: "細菌・毒素",
+        description: "缶詰やハチミツに潜む強力な菌！1歳未満の赤ちゃんには絶対にハチミツを与えちゃダメだよ！"
+      },
+      {
+        name: "アニサキス",
+        kana: "あにさきす",
+        category: "寄生虫",
+        description: "サバやイカに寄生する糸状の虫！マイナス20度で24時間以上冷凍するか加熱して退治しよう！"
+      },
+      {
+        name: "腸炎ビブリオ",
+        kana: "ちょうえんびぶりお",
+        category: "細菌",
+        description: "夏の海水に生息し、生の魚介類で増殖するよ！真水に弱いから水道水でゴシゴシ洗い流そう！"
+      },
+      {
+        name: "セレウス菌",
+        kana: "せれうすきん",
+        category: "細菌",
+        description: "チャーハンやピラフ、スパゲティで増えやすい！残った料理は放置せず冷蔵庫へ！"
+      }
+    ];
+
+    const KANA_ROMAN_MAP = {
+      'きゃ': ['kya', 'kixya', 'kilya'], 'きゅ': ['kyu', 'kixyu', 'kilyu'], 'きょ': ['kyo', 'kixyo', 'kilyo'],
+      'しゃ': ['sya', 'sha', 'sixya', 'silya'], 'しゅ': ['syu', 'shu', 'sixyu', 'silyu'], 'しょ': ['syo', 'sho', 'sixyo', 'silyo'], 'しぇ': ['she', 'sye', 'sixye'],
+      'ちゃ': ['tya', 'cha', 'cya', 'tixya'], 'ちゅ': ['tyu', 'chu', 'cyu', 'tixyu'], 'ちょ': ['tyo', 'cho', 'cyo', 'tixyo'], 'ちぇ': ['che', 'tye', 'cye', 'tixye'],
+      'にゃ': ['nya', 'nixya'], 'にゅ': ['nyu', 'nixyu'], 'にょ': ['nyo', 'nixyo'],
+      'ひゃ': ['hya', 'hixya'], 'ひゅ': ['hyu', 'hixyu'], 'ひょ': ['hyo', 'hixyo'],
+      'みゃ': ['mya', 'mixya'], 'みゅ': ['myu', 'mixyu'], 'みょ': ['myo', 'mixyo'],
+      'りゃ': ['rya', 'rixya'], 'りゅ': ['ryu', 'rixyu'], 'りょ': ['ryo', 'rixyo'],
+      'ぎゃ': ['gya', 'gixya'], 'ぎゅ': ['gyu', 'gixyu'], 'ぎょ': ['gyo', 'gixyo'],
+      'じゃ': ['ja', 'zya', 'jya', 'zixya'], 'じゅ': ['ju', 'zyu', 'jyu', 'zixyu'], 'じょ': ['jo', 'zyo', 'jyo', 'zixyo'], 'じぇ': ['je', 'zye', 'jye'],
+      'びゃ': ['bya', 'bixya'], 'びゅ': ['byu', 'bixyu'], 'びょ': ['byo', 'bixyo'],
+      'ぴゃ': ['pya', 'pixya'], 'ぴゅ': ['pyu', 'pixyu'], 'ぴょ': ['pyo', 'pixyo'],
+      'ふぁ': ['fa', 'fuxa', 'huxa'], 'ふぃ': ['fi', 'fuxi', 'huxi'], 'ふぇ': ['fe', 'fuxe', 'huxe'], 'ふぉ': ['fo', 'fuxo', 'huxo'],
+      'てぃ': ['thi', 'tixi', 'tili'], 'でぃ': ['dhi', 'dixi', 'dili'],
+      'どぅ': ['dwu', 'douxu'], 'とぅ': ['twu', 'touxu'],
+      'うぃ': ['wi', 'uxi'], 'うぇ': ['we', 'uxe'],
+
+      'あ': ['a'], 'い': ['i'], 'う': ['u', 'whu'], 'え': ['e'], 'お': ['o'],
+      'か': ['ka', 'ca'], 'き': ['ki'], 'く': ['ku', 'cu', 'qu'], 'け': ['ke'], 'こ': ['ko', 'co'],
+      'さ': ['sa'], 'し': ['si', 'shi'], 'す': ['su'], 'せ': ['se', 'ce'], 'そ': ['so'],
+      'た': ['ta'], 'ち': ['ti', 'chi'], 'つ': ['tu', 'tsu'], 'て': ['te'], 'と': ['to'],
+      'な': ['na'], 'に': ['ni'], 'ぬ': ['nu'], 'ね': ['ne'], 'の': ['no'],
+      'は': ['ha'], 'ひ': ['hi'], 'ふ': ['hu', 'fu'], 'へ': ['he'], 'ほ': ['ho'],
+      'ま': ['ma'], 'み': ['mi'], 'む': ['mu'], 'め': ['me'], 'も': ['mo'],
+      'や': ['ya'], 'ゆ': ['yu'], 'よ': ['yo'],
+      'ら': ['ra'], 'り': ['ri'], 'る': ['ru'], 'れ': ['re'], 'ろ': ['ro'],
+      'わ': ['wa'], 'を': ['wo'], 'ん': ['nn', "n'"],
+      'が': ['ga'], 'ぎ': ['gi'], 'ぐ': ['gu'], 'げ': ['ge'], 'ご': ['go'],
+      'ざ': ['za'], 'じ': ['zi', 'ji'], 'ず': ['zu'], 'ぜ': ['ze'], 'ぞ': ['zo'],
+      'だ': ['da'], 'ぢ': ['di'], 'づ': ['du'], 'で': ['de'], 'ど': ['do'],
+      'ば': ['ba'], 'び': ['bi'], 'ぶ': ['bu'], 'べ': ['be'], 'ぼ': ['bo'],
+      'ぱ': ['pa'], 'ぴ': ['pi'], 'ぷ': ['pu'], 'ぺ': ['pe'], 'ぽ': ['po'],
+      'ぁ': ['xa', 'la'], 'ぃ': ['xi', 'li'], 'ぅ': ['xu', 'lu'], 'ぇ': ['xe', 'le'], 'ぉ': ['xo', 'lo'],
+      'っ': ['xtu', 'ltu', 'xtsu'], 'ゃ': ['xya', 'lya'], 'ゅ': ['xyu', 'lyu'], 'ょ': ['xyo', 'lyo'],
+      'ー': ['-']
+    };
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let totalTypedKeys = 0;
+    let totalErrors = 0;
+    let startTime = null;
+    let isSoundMuted = false;
+    let currentAudioObj = null;
+    let currentQuestions = [];
+
+    let kanaNodes = [];
+    let currentNodeIdx = 0;
+    let currentTypedInNode = "";
+    let activePattern = "";
+    let completedRomanHistory = "";
+
+    let audioCtx = null;
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSoundEffect(type) {
+      if (isSoundMuted) return;
+      initAudioContext();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'key') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } else if (type === 'correct') {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, now + idx * 0.06);
+          g.gain.setValueAtTime(0.15, now + idx * 0.06);
+          g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.2);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(now + idx * 0.06);
+          o.stop(now + idx * 0.06 + 0.2);
+        });
+      } else if (type === 'miss') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      }
+    }
+
+    function speakQuestionAudio(wordName, wordKana, description) {
+      stopSpeech();
+
+      if (isSoundMuted) return;
+
+      const audioIndicator = document.getElementById('audio-indicator');
+      const audioStatusText = document.getElementById('audio-status-text');
+
+      if (!('speechSynthesis' in window)) return;
+
+      window.speechSynthesis.cancel();
+
+      if (audioIndicator) audioIndicator.style.opacity = '1';
+
+      const nameUtterance = new SpeechSynthesisUtterance(wordKana);
+      nameUtterance.lang = 'ja-JP';
+      nameUtterance.pitch = 1.3;
+      nameUtterance.rate = 1.1;
+
+      nameUtterance.onstart = () => {
+        if (audioStatusText) audioStatusText.textContent = `🔊 タイプ対象: 「${wordName}」`;
+      };
+
+      nameUtterance.onend = () => {
+        if (document.getElementById('game-screen').classList.contains('hidden')) {
+          if (audioIndicator) audioIndicator.style.opacity = '0';
+          return;
+        }
+
+        // 「O157」を音声合成で「オーいちごーなな」と正確に読み上げる処理
+        const spokenDescription = description.replace(/O157/gi, 'オーいちごーなな');
+        const descUtterance = new SpeechSynthesisUtterance(spokenDescription);
+        descUtterance.lang = 'ja-JP';
+        descUtterance.pitch = 1.1;
+        descUtterance.rate = 1.0;
+
+        descUtterance.onstart = () => {
+          if (audioStatusText) audioStatusText.textContent = "🔊 解説を読み上げ中...";
+        };
+
+        descUtterance.onend = () => {
+          if (audioIndicator) audioIndicator.style.opacity = '0';
+        };
+
+        window.speechSynthesis.speak(descUtterance);
+      };
+
+      window.speechSynthesis.speak(nameUtterance);
+    }
+
+    function stopSpeech() {
+      if (currentAudioObj) {
+        currentAudioObj.pause();
+        currentAudioObj.currentTime = 0;
+        currentAudioObj = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      const audioIndicator = document.getElementById('audio-indicator');
+      if (audioIndicator) audioIndicator.style.opacity = '0';
+    }
+
+    function parseKanaToNodes(kanaStr) {
+      let i = 0;
+      const nodes = [];
+      while (i < kanaStr.length) {
+        if (i + 1 < kanaStr.length) {
+          const pair = kanaStr.slice(i, i + 2);
+          if (KANA_ROMAN_MAP[pair]) {
+            nodes.push({ kana: pair, patterns: [...KANA_ROMAN_MAP[pair]] });
+            i += 2;
+            continue;
+          }
+        }
+
+        if (kanaStr[i] === 'っ' && i + 1 < kanaStr.length) {
+          let nextPatterns = [];
+          if (i + 2 < kanaStr.length && KANA_ROMAN_MAP[kanaStr.slice(i + 1, i + 3)]) {
+            nextPatterns = KANA_ROMAN_MAP[kanaStr.slice(i + 1, i + 3)];
+          } else if (KANA_ROMAN_MAP[kanaStr[i + 1]]) {
+            nextPatterns = KANA_ROMAN_MAP[kanaStr[i + 1]];
+          }
+
+          const doubleConsonants = [];
+          nextPatterns.forEach(p => {
+            const firstChar = p[0];
+            if ('abcdefghijklmnopqrstuvwxyz'.includes(firstChar) && !'aeiou'.includes(firstChar)) {
+              doubleConsonants.push(firstChar);
+            }
+          });
+
+          // 子音重ね（t, k, p, s等）を優先案内（配列の先頭）にし、後続で ltu, xtu 等も正解判定として保持
+          const sokuonPatterns = [...doubleConsonants, 'ltu', 'xtu', 'xtsu'];
+          nodes.push({ kana: 'っ', patterns: Array.from(new Set(sokuonPatterns)) });
+          i += 1;
+          continue;
+        }
+
+        if (kanaStr[i] === 'ん') {
+          const nPatterns = ['nn', "n'"];
+          const nextChar = kanaStr[i + 1];
+          let allowSingleN = true;
+          if (nextChar && 'あいうえおやゆよなにぬねの'.includes(nextChar)) {
+            allowSingleN = false;
+          }
+          if (allowSingleN) {
+            nPatterns.unshift('n');
+          }
+          nodes.push({ kana: 'ん', patterns: Array.from(new Set(nPatterns)) });
+          i += 1;
+          continue;
+        }
+
+        const char = kanaStr[i];
+        if (KANA_ROMAN_MAP[char]) {
+          nodes.push({ kana: char, patterns: [...KANA_ROMAN_MAP[char]] });
+        } else {
+          nodes.push({ kana: char, patterns: [char] });
+        }
+        i += 1;
+      }
+      return nodes;
+    }
+
+    function loadQuestion(index) {
+      if (index >= currentQuestions.length) {
+        finishGame();
+        return;
+      }
+
+      const q = currentQuestions[index];
+
+      const targetNameEl = document.getElementById('target-name');
+      const targetKanaEl = document.getElementById('target-kana');
+
+      targetNameEl.textContent = q.name;
+      targetKanaEl.textContent = q.kana;
+      document.getElementById('category-badge').textContent = q.category + "性";
+      document.getElementById('description-text').textContent = `「${q.description}」`;
+
+      const pct = (index / currentQuestions.length) * 100;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+
+      kanaNodes = parseKanaToNodes(q.kana);
+      currentNodeIdx = 0;
+      currentTypedInNode = "";
+      activePattern = kanaNodes[0].patterns[0];
+      completedRomanHistory = "";
+
+      updateDisplay();
+      highlightNextKey();
+
+      speakQuestionAudio(q.name, q.kana, q.description);
+    }
+
+    function updateDisplay() {
+      const typedEl = document.getElementById('typed-roman');
+      const currEl = document.getElementById('current-char-roman');
+      const untypedEl = document.getElementById('untyped-roman');
+
+      let currentPattern = "";
+      if (currentNodeIdx < kanaNodes.length) {
+        const currNode = kanaNodes[currentNodeIdx];
+        const match = currNode.patterns.find(p => p.startsWith(currentTypedInNode));
+        currentPattern = match || currNode.patterns[0];
+      }
+
+      typedEl.textContent = completedRomanHistory + currentTypedInNode;
+
+      if (currentNodeIdx < kanaNodes.length) {
+        const remainingInCurrent = currentPattern.slice(currentTypedInNode.length);
+        currEl.textContent = remainingInCurrent[0] || "";
+
+        let futureStr = remainingInCurrent.slice(1);
+        for (let i = currentNodeIdx + 1; i < kanaNodes.length; i++) {
+          futureStr += kanaNodes[i].patterns[0];
+        }
+        untypedEl.textContent = futureStr;
+      } else {
+        currEl.textContent = "";
+        untypedEl.textContent = "";
+      }
+    }
+
+    function processInputKey(keyChar) {
+      if (document.getElementById('game-screen').classList.contains('hidden')) return;
+
+      const key = keyChar.toLowerCase();
+      if (key.length !== 1) return;
+
+      totalTypedKeys++;
+
+      const currNode = kanaNodes[currentNodeIdx];
+      const validPatterns = currNode.patterns;
+      const testInput = currentTypedInNode + key;
+
+      const matches = validPatterns.filter(p => p.startsWith(testInput));
+
+      if (matches.length > 0) {
+        playSoundEffect('key');
+        currentTypedInNode = testInput;
+
+        pressKeyVisual(key);
+
+        const exactMatch = matches.find(p => p === currentTypedInNode);
+        if (exactMatch) {
+          completedRomanHistory += exactMatch;
+          currentNodeIdx++;
+          currentTypedInNode = "";
+
+          if (currentNodeIdx >= kanaNodes.length) {
+            onCorrectAnswer();
+            return;
+          }
+        }
+
+        updateDisplay();
+        highlightNextKey();
+
+      } else {
+        totalErrors++;
+        playSoundEffect('miss');
+        flashErrorVisual();
+      }
+
+      updateStatsDisplay();
+    }
+
+    function handleKeyDown(e) {
+      if (e.key) {
+        processInputKey(e.key);
+      }
+    }
+
+    function onCorrectAnswer() {
+      stopSpeech();
+
+      playSoundEffect('correct');
+      score += 100;
+      triggerConfetti();
+
+      currentQuestionIndex++;
+
+      setTimeout(() => {
+        loadQuestion(currentQuestionIndex);
+      }, 300);
+    }
+
+    function updateStatsDisplay() {
+      document.getElementById('score-display').textContent = score;
+
+      if (startTime) {
+        const elapsedMinutes = (Date.now() - startTime) / 60000;
+        if (elapsedMinutes > 0) {
+          const wpm = Math.round((totalTypedKeys / 5) / elapsedMinutes);
+          document.getElementById('wpm-display').textContent = wpm;
+        }
+      }
+    }
+
+    // 各段の合計ユニット数を「12.5u」に精密統一したリアルQWERTYキーボードデータ
+    const KEYBOARD_LAYOUT_DATA = [
+      {
+        rowId: 'keyboard-row-0',
+        keys: [
+          { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }, { key: '5' },
+          { key: '6' }, { key: '7' }, { key: '8' }, { key: '9' }, { key: '0' },
+          { key: '-', display: '-' }, { key: 'backspace', display: 'BS', flex: 1.5, special: true }
+        ]
+      },
+      {
+        rowId: 'keyboard-row-1',
+        keys: [
+          { key: 'tab', display: 'Tab', flex: 1.5, special: true },
+          { key: 'q' }, { key: 'w' }, { key: 'e' }, { key: 'r' }, { key: 't' },
+          { key: 'y' }, { key: 'u' }, { key: 'i' }, { key: 'o' }, { key: 'p' },
+          { key: 'del', display: 'Del', flex: 1, special: true }
+        ]
+      },
+      {
+        rowId: 'keyboard-row-2',
+        keys: [
+          { key: 'caps', display: 'Caps', flex: 1.75, special: true },
+          { key: 'a' }, { key: 's' }, { key: 'd' }, { key: 'f' }, { key: 'g' },
+          { key: 'h' }, { key: 'j' }, { key: 'k' }, { key: 'l' },
+          { key: 'enter', display: 'Enter', flex: 1.75, special: true }
+        ]
+      },
+      {
+        rowId: 'keyboard-row-3',
+        keys: [
+          { key: 'shift', display: 'Shift', flex: 2.25, special: true },
+          { key: 'z' }, { key: 'x' }, { key: 'c' }, { key: 'v' }, { key: 'b' },
+          { key: 'n' }, { key: 'm' },
+          { key: 'shift_r', display: 'Shift', flex: 3.25, special: true }
+        ]
+      },
+      {
+        rowId: 'keyboard-row-4',
+        keys: [
+          { spacer: true, flex: 3.25 },
+          { key: 'space', display: 'Space', flex: 6, isSpace: true },
+          { spacer: true, flex: 3.25 }
+        ]
+      }
+    ];
+
+    function getKeyElementId(key) {
+      return `key-${key.toLowerCase()}`;
+    }
+
+    function createKeyboardUI() {
+      KEYBOARD_LAYOUT_DATA.forEach(rowData => {
+        const container = document.getElementById(rowData.rowId);
+        if (!container) return;
+        container.innerHTML = '';
+
+        rowData.keys.forEach(item => {
+          if (item.spacer) {
+            const spacerEl = document.createElement('div');
+            spacerEl.style.flex = `${item.flex} ${item.flex} 0%`;
+            spacerEl.className = 'pointer-events-none opacity-0';
+            container.appendChild(spacerEl);
+            return;
+          }
+
+          const keyEl = document.createElement('div');
+          const keyVal = item.key.toLowerCase();
+          keyEl.id = getKeyElementId(keyVal);
+
+          const flexVal = item.flex || 1;
+          const label = item.display || item.key.toUpperCase();
+
+          if (item.special) {
+            keyEl.className = `key-cap bg-slate-200/80 border border-slate-300/80 text-slate-500 text-[10px] sm:text-xs font-fredoka rounded-md sm:rounded-lg h-9 sm:h-11 flex items-center justify-center font-semibold select-none cursor-default opacity-80`;
+            keyEl.style.flex = `${flexVal} ${flexVal} 0%`;
+          } else if (item.isSpace) {
+            keyEl.className = `key-cap bg-white border border-slate-200 text-slate-500 text-xs font-fredoka rounded-md sm:rounded-lg h-9 sm:h-11 flex items-center justify-center font-bold transition cursor-pointer hover:bg-amber-100 active:scale-95 select-none touch-manipulation shadow-sm`;
+            keyEl.style.flex = `${flexVal} ${flexVal} 0%`;
+          } else {
+            keyEl.className = `key-cap bg-white border border-slate-200 text-slate-800 text-xs sm:text-sm font-fredoka rounded-md sm:rounded-lg h-9 sm:h-11 flex items-center justify-center font-bold transition cursor-pointer hover:bg-amber-100 active:scale-95 select-none touch-manipulation relative shadow-sm`;
+            keyEl.style.flex = `${flexVal} ${flexVal} 0%`;
+          }
+
+          keyEl.textContent = label;
+
+          // ホームポジション（F, J）のドット再現
+          if (keyVal === 'f' || keyVal === 'j') {
+            const bump = document.createElement('span');
+            bump.className = 'absolute bottom-1 w-1.5 h-0.5 bg-slate-400 rounded-full';
+            keyEl.appendChild(bump);
+          }
+
+          if (!item.special) {
+            keyEl.addEventListener('pointerdown', (e) => {
+              e.preventDefault();
+              if (item.isSpace) {
+                processInputKey(' ');
+              } else {
+                processInputKey(keyVal);
+              }
+            });
+          }
+
+          container.appendChild(keyEl);
+        });
+      });
+    }
+
+    function highlightNextKey() {
+      document.querySelectorAll('.key-cap').forEach(el => {
+        el.classList.remove('next-target');
+      });
+
+      if (currentNodeIdx >= kanaNodes.length) return;
+
+      const currNode = kanaNodes[currentNodeIdx];
+      const matchedPattern = currNode.patterns.find(p => p.startsWith(currentTypedInNode)) || currNode.patterns[0];
+      const nextChar = matchedPattern[currentTypedInNode.length];
+
+      if (nextChar) {
+        const keyId = getKeyElementId(nextChar);
+        const targetEl = document.getElementById(keyId);
+        if (targetEl) targetEl.classList.add('next-target');
+      }
+    }
+
+    function pressKeyVisual(key) {
+      const keyId = getKeyElementId(key);
+      const targetEl = document.getElementById(keyId);
+      if (targetEl) {
+        targetEl.classList.add('pressed');
+        setTimeout(() => targetEl.classList.remove('pressed'), 120);
+      }
+    }
+
+    function flashErrorVisual() {
+      const targetCard = document.getElementById('target-name');
+      targetCard.classList.add('text-red-500');
+      setTimeout(() => targetCard.classList.remove('text-red-500'), 200);
+    }
+
+    function finishGame() {
+      stopSpeech();
+
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+      document.getElementById('result-screen').classList.add('flex');
+
+      const elapsedMinutes = (Date.now() - startTime) / 60000;
+      const wpm = elapsedMinutes > 0 ? Math.round((totalTypedKeys / 5) / elapsedMinutes) : 0;
+      const accuracy = totalTypedKeys > 0 ? Math.round(((totalTypedKeys - totalErrors) / totalTypedKeys) * 100) : 100;
+
+      let rank = 'C';
+      if (accuracy >= 95 && wpm >= 40) rank = 'S';
+      else if (accuracy >= 90 && wpm >= 25) rank = 'A';
+      else if (accuracy >= 80) rank = 'B';
+
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('final-wpm').textContent = wpm;
+      document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+      document.getElementById('final-rank').textContent = rank;
+
+      const summaryList = document.getElementById('summary-list');
+      summaryList.innerHTML = currentQuestions.map(item => `
+        <li class="bg-white p-2.5 rounded-xl border border-slate-200">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-amber-900">${item.name} (${item.kana})</span>
+            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">${item.category}</span>
+          </div>
+          <p class="text-slate-600 text-[11px]">${item.description}</p>
+        </li>
+      `).join('');
+
+      triggerConfetti();
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'];
+
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 4 - 2,
+          vy: Math.random() * 3 + 3,
+          rot: Math.random() * 360
+        });
+      }
+
+      let frame = 0;
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += 4;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+
+        frame++;
+        if (frame < 120) {
+          requestAnimationFrame(render);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      render();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      createKeyboardUI();
+
+      document.getElementById('start-btn').addEventListener('click', () => {
+        initAudioContext();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('game-screen').classList.add('flex');
+
+        currentQuestions = shuffleArray(FOOD_POISONING_DATA);
+        currentQuestionIndex = 0;
+        score = 0;
+        totalTypedKeys = 0;
+        totalErrors = 0;
+        startTime = Date.now();
+
+        loadQuestion(currentQuestionIndex);
+      });
+
+      document.getElementById('restart-btn').addEventListener('click', () => {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+      });
+
+      document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+        isSoundMuted = !isSoundMuted;
+        const icon = document.getElementById('sound-icon');
+        if (isSoundMuted) {
+          icon.className = "fa-solid fa-volume-xmark text-slate-400";
+          stopSpeech();
+        } else {
+          icon.className = "fa-solid fa-volume-high text-amber-600";
+        }
+      });
+
+      window.addEventListener('keydown', handleKeyDown);
+    });
+  </script>
+</body>
+</html>
