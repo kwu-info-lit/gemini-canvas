@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簿記タイピングマスター</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti for winning effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            user-select: none;
+        }
+        .font-mono-custom {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .typed-text {
+            color: #10b981;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+        .current-char {
+            background-color: #f59e0b;
+            color: #0f172a;
+            border-radius: 4px;
+            animation: pulse-bg 1s infinite alternate;
+        }
+        @keyframes pulse-bg {
+            0% { background-color: #f59e0b; }
+            100% { background-color: #fbbf24; }
+        }
+        .untyped-text {
+            color: #94a3b8;
+        }
+        .shake {
+            animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+        .speech-wave {
+            display: inline-block;
+            position: relative;
+            width: 24px;
+            height: 18px;
+        }
+        .speech-wave span {
+            position: absolute;
+            bottom: 0;
+            width: 4px;
+            background-color: #ec4899;
+            border-radius: 2px;
+            animation: wave 1s infinite ease-in-out;
+        }
+        .speech-wave span:nth-child(1) { left: 0px; animation-delay: 0.0s; height: 10px; }
+        .speech-wave span:nth-child(2) { left: 7px; animation-delay: 0.2s; height: 16px; }
+        .speech-wave span:nth-child(3) { left: 14px; animation-delay: 0.4s; height: 8px; }
+        .speech-wave span:nth-child(4) { left: 21px; animation-delay: 0.1s; height: 14px; }
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.4); }
+            50% { transform: scaleY(1.2); }
+        }
+        .keyboard-key {
+            transition: all 0.08s ease;
+            box-shadow: 0 3px 0 #334155;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .keyboard-key:hover {
+            background-color: #334155 !important;
+        }
+        .keyboard-key.active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #1d4ed8;
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between p-4 min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="w-full max-w-4xl flex items-center justify-between py-4 px-6 bg-slate-800/80 backdrop-blur border border-slate-700/60 rounded-2xl shadow-xl mb-4">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-tr from-amber-400 to-orange-500 p-2.5 rounded-xl text-slate-900 font-bold shadow-lg">
+                <i class="fa-solid fa-book-bookmark text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-wide bg-gradient-to-r from-amber-300 via-orange-300 to-amber-100 bg-clip-text text-transparent">
+                    簿記タイピングマスター
+                </h1>
+                <p class="text-xs text-slate-400">音で覚えてタイプで刻む！</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- Audio Toggle Buttons -->
+            <button id="ttsToggleBtn" class="flex items-center space-x-2 bg-slate-700/80 hover:bg-slate-700 text-amber-300 px-3 py-1.5 rounded-lg border border-slate-600 text-sm transition">
+                <i class="fa-solid fa-volume-high" id="ttsIcon"></i>
+                <span id="ttsStatus">音声読み上げ: ON</span>
+            </button>
+            <button id="sfxToggleBtn" class="flex items-center space-x-2 bg-slate-700/80 hover:bg-slate-700 text-emerald-300 px-3 py-1.5 rounded-lg border border-slate-600 text-sm transition">
+                <i class="fa-solid fa-music" id="sfxIcon"></i>
+                <span id="sfxStatus">効果音: ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-4xl flex-1 flex flex-col justify-center items-center relative">
+
+        <!-- SCREEN 1: START SCREEN -->
+        <div id="startScreen" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-3xl p-8 shadow-2xl text-center space-y-8 backdrop-blur">
+            <div class="space-y-3">
+                <span class="px-4 py-1.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
+                    Fun Bookkeeping Typing Game
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black text-white">
+                    簿記キーワードを「耳」と「指」で学ぼう！
+                </h2>
+                <p class="text-slate-300 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+                    問題が出現すると単語を読み上げ、入力中にはその用語の<span class="text-amber-300 font-bold">詳しい解説</span>を音声でレクチャー！<br>
+                    正解した瞬間に解説が止まり、次の問題へとスピード進展します。
+                </p>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                <button onclick="startGame('basic')" class="group p-5 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-amber-500 hover:to-orange-600 border border-slate-600 hover:border-amber-400 rounded-2xl transition duration-200 text-left shadow-lg">
+                    <div class="text-2xl mb-2 group-hover:scale-110 transition-transform">🌱</div>
+                    <div class="font-bold text-white group-hover:text-slate-900 text-lg">初級・3級基礎</div>
+                    <div class="text-xs text-slate-400 group-hover:text-slate-900/80 mt-1">現金、売掛金、買掛金など基本の勘定科目</div>
+                </button>
+                <button onclick="startGame('advanced')" class="group p-5 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-indigo-500 hover:to-purple-600 border border-slate-600 hover:border-indigo-400 rounded-2xl transition duration-200 text-left shadow-lg">
+                    <div class="text-2xl mb-2 group-hover:scale-110 transition-transform">🚀</div>
+                    <div class="font-bold text-white group-hover:text-slate-900 text-lg">中級・2級・決算</div>
+                    <div class="text-xs text-slate-400 group-hover:text-slate-900/80 mt-1">減価償却、貸倒引当金、財務諸表用語</div>
+                </button>
+                <button onclick="startGame('all')" class="group p-5 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-emerald-500 hover:to-teal-600 border border-slate-600 hover:border-emerald-400 rounded-2xl transition duration-200 text-left shadow-lg">
+                    <div class="text-2xl mb-2 group-hover:scale-110 transition-transform">🔥</div>
+                    <div class="font-bold text-white group-hover:text-slate-900 text-lg">全ランダムミックス</div>
+                    <div class="text-xs text-slate-400 group-hover:text-slate-900/80 mt-1">全ての簿記用語からランダムに出題！</div>
+                </button>
+            </div>
+
+            <div class="pt-2 text-slate-400 text-xs flex justify-center items-center space-x-4">
+                <span><i class="fa-solid fa-keyboard text-amber-400 mr-1"></i> 「sho」と「syo」などの表記ゆれ完全対応</span>
+                <span><i class="fa-solid fa-stopwatch text-emerald-400 mr-1"></i> 全10問タイムアタック</span>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAMEPLAY SCREEN -->
+        <div id="gameScreen" class="w-full hidden flex-col items-center space-y-6">
+
+            <!-- Stats Header Bar -->
+            <div class="w-full grid grid-cols-4 gap-3 bg-slate-800/80 border border-slate-700 rounded-2xl p-4 shadow-lg text-center backdrop-blur">
+                <div>
+                    <span class="text-xs text-slate-400 block font-bold">進捗</span>
+                    <span id="progressText" class="text-xl font-black text-amber-300">1 / 10</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-bold">スコア</span>
+                    <span id="scoreText" class="text-xl font-black text-white">0</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-bold">コンボ</span>
+                    <span id="comboText" class="text-xl font-black text-emerald-400">0</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-bold">速度 (CPM)</span>
+                    <span id="cpmText" class="text-xl font-black text-cyan-400">0</span>
+                </div>
+            </div>
+
+            <!-- Typing Card -->
+            <div id="typingCard" class="w-full bg-slate-800/90 border-2 border-slate-700 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200">
+                
+                <!-- Category Badge -->
+                <div class="absolute top-4 left-6 flex items-center space-x-2">
+                    <span id="wordCategory" class="px-3 py-1 rounded-full bg-slate-700 text-amber-300 text-xs font-bold border border-slate-600">
+                        勘定科目
+                    </span>
+                </div>
+
+                <!-- Speech Wave Indicator -->
+                <div id="speakingIndicator" class="absolute top-4 right-6 flex items-center space-x-2 bg-pink-950/60 border border-pink-500/40 text-pink-300 text-xs px-3 py-1 rounded-full opacity-0 transition-opacity">
+                    <div class="speech-wave mr-1">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <span id="speechStateText" class="font-bold">解説を読み上げ中...</span>
+                </div>
+
+                <!-- Word Display (Kanji / Reading / Romaji) -->
+                <div class="my-6 text-center space-y-3 w-full">
+                    <!-- Kanji Term -->
+                    <h2 id="kanjiDisplay" class="text-4xl sm:text-6xl font-black tracking-wider text-white drop-shadow-md">
+                        現金
+                    </h2>
+
+                    <!-- Kana Reading -->
+                    <p id="kanaDisplay" class="text-lg sm:text-2xl text-amber-300/90 font-bold tracking-widest">
+                        げんきん
+                    </p>
+
+                    <!-- Interactive Romaji Display -->
+                    <div id="romajiDisplay" class="font-mono-custom text-2xl sm:text-4xl font-bold tracking-wider py-4 px-6 bg-slate-900/80 rounded-2xl border border-slate-700 inline-block max-w-full overflow-x-auto shadow-inner">
+                        <!-- Romaji chars populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Audio Commentary Overlay Box -->
+                <div class="w-full bg-slate-900/80 border border-slate-700/80 rounded-2xl p-5 flex items-start space-x-4 text-slate-200 shadow-inner">
+                    <div class="text-amber-400 text-2xl sm:text-3xl pt-1"><i class="fa-solid fa-lightbulb"></i></div>
+                    <div class="flex-1">
+                        <span class="text-xs sm:text-sm text-amber-400 font-bold block mb-1">💡 簿記豆知識・解説</span>
+                        <p id="explanationText" class="leading-relaxed text-base sm:text-lg text-slate-100 font-medium">
+                            ここに解説テキストが表示されます。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Visual Progress Bar -->
+            <div class="w-full bg-slate-700 h-2 rounded-full mt-6 overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Virtual Keyboard Guide (Alphabet Only) -->
+        <div id="keyboard" class="w-full max-w-xl bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 shadow-xl flex flex-col items-center space-y-2 font-mono-custom overflow-x-auto">
+            <div class="flex flex-col space-y-2 min-w-max">
+                <!-- Row 1: QWERTYUIOP (10 keys) -->
+                <div class="flex space-x-1 sm:space-x-1.5">
+                    <div data-key="q" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">Q</div>
+                    <div data-key="w" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">W</div>
+                    <div data-key="e" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">E</div>
+                    <div data-key="r" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">R</div>
+                    <div data-key="t" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">T</div>
+                    <div data-key="y" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">Y</div>
+                    <div data-key="u" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">U</div>
+                    <div data-key="i" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">I</div>
+                    <div data-key="o" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">O</div>
+                    <div data-key="p" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">P</div>
+                </div>
+
+                <!-- Row 2: ASDFGHJKL (9 keys) - Qに対して半キー分だけ右にシフト -->
+                <div class="flex space-x-1 sm:space-x-1.5 ml-[14px] sm:ml-[20px]">
+                    <div data-key="a" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">A</div>
+                    <div data-key="s" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">S</div>
+                    <div data-key="d" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">D</div>
+                    <div data-key="f" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">F</div>
+                    <div data-key="g" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">G</div>
+                    <div data-key="h" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">H</div>
+                    <div data-key="j" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">J</div>
+                    <div data-key="k" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">K</div>
+                    <div data-key="l" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">L</div>
+                </div>
+
+                <!-- Row 3: ZXCVBNM (7 keys) - AとSの間(標準的QWERTY)へ配置 -->
+                <div class="flex space-x-1 sm:space-x-1.5 ml-[38px] sm:ml-[54px]">
+                    <div data-key="z" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">Z</div>
+                    <div data-key="x" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">X</div>
+                    <div data-key="c" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">C</div>
+                    <div data-key="v" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">V</div>
+                    <div data-key="b" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">B</div>
+                    <div data-key="n" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">N</div>
+                    <div data-key="m" class="keyboard-key bg-slate-800 text-slate-200 border border-slate-600/80 rounded-lg w-7 h-9 sm:w-10 sm:h-11 flex items-center justify-center font-bold text-xs sm:text-sm">M</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: RESULT SCREEN -->
+        <div id="resultScreen" class="w-full hidden bg-slate-800/90 border border-slate-700 rounded-3xl p-8 shadow-2xl text-center space-y-6 backdrop-blur">
+            <div class="space-y-2">
+                <span class="text-4xl">🎉</span>
+                <h2 class="text-3xl font-black text-white">トレーニング完了！</h2>
+                <p class="text-slate-400 text-sm">素晴らしいタイピング速度と簿記知識です！</p>
+            </div>
+
+            <!-- Final Result Stats Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-xl mx-auto my-6">
+                <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-bold block">最終スコア</span>
+                    <span id="finalScore" class="text-3xl font-black text-amber-300">0</span>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-bold block">クリアタイム</span>
+                    <span id="finalTime" class="text-3xl font-black text-cyan-300">0s</span>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-bold block">平均速度 (CPM)</span>
+                    <span id="finalCpm" class="text-3xl font-black text-emerald-300">0</span>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-bold block">正確率</span>
+                    <span id="finalAccuracy" class="text-3xl font-black text-purple-300">100%</span>
+                </div>
+            </div>
+
+            <div class="pt-4 flex justify-center space-x-4">
+                <button onclick="resetToStart()" class="px-6 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-white transition">
+                    <i class="fa-solid fa-house mr-2"></i>タイトルへ
+                </button>
+                <button onclick="startGame(currentMode)" class="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 font-black text-slate-900 shadow-lg transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>もう一度挑戦
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-xs text-slate-500 text-center">
+        &copy; 簿記タイピングマスター - 音声読み上げとキーボード操作で楽しく学習
+    </footer>
+
+    <script>
+        const BOOKKEEPING_WORDS = [
+            // 3級・基礎用語
+            {
+                kanji: "現金",
+                kana: "げんきん",
+                category: "資産",
+                level: "basic",
+                desc: "紙幣や硬貨だけでなく、通貨代用証券（小切手など）も含まれる資産の勘定科目です。",
+                spokenDesc: "しへい や こうか だけでなく、つうか だいよう しょうけん こぎって など も ふくまれる しさん の かんじょう かもく です。"
+            },
+            {
+                kanji: "当座預金",
+                kana: "とうざよきん",
+                category: "資産",
+                level: "basic",
+                desc: "小切手の出し入れに使用され、利息がつかない無利息の預金科目です。",
+                spokenDesc: "こぎって の だしいれ に しよう され、りそく が つかない むりそく の よきん かもく です。"
+            },
+            {
+                kanji: "売掛金",
+                kana: "うりかけきん",
+                category: "資産",
+                level: "basic",
+                desc: "商品を売上げ、代金を後から受け取る権利（ツケ）を表す資産科目です。",
+                spokenDesc: "しょうひん を うりあげ、だいきん を あと から うけとる けんり つけ を あらわす しさん かもく です。"
+            },
+            {
+                kanji: "買掛金",
+                kana: "かいかけきん",
+                category: "負債",
+                level: "basic",
+                desc: "商品を仕入れ、代金を後で支払う義務（ツケ）を表す負債科目です。",
+                spokenDesc: "しょうひん を しいれ、だいきん を あと で しはらう ぎむ つけ を あらわす ふさい かもく です。"
+            },
+            {
+                kanji: "商品売買",
+                kana: "しょうひんばいばい",
+                category: "取引",
+                level: "basic",
+                desc: "商品を買い入れて、顧客へ販売する企業の最も基本的な営業活動です。",
+                spokenDesc: "しょうひん を かいいれて、こきゃく へ はんばい する きぎょう の もっとも きほんてき な えいぎょう かつどう です。"
+            },
+            {
+                kanji: "貸倒損失",
+                kana: "かしだおれそんしつ",
+                category: "費用",
+                level: "basic",
+                desc: "売掛金などの債権が回収不可能（倒産など）になった際に計上する費用です。",
+                spokenDesc: "うりかけきん などの さいけん が かいしゅう ふのう とうさん など に なった さい に けいじょう する ひよう です。"
+            },
+            {
+                kanji: "資本金",
+                kana: "しほんきん",
+                category: "純資産",
+                level: "basic",
+                desc: "株主や出資者から元手として提供された資金を表す純資産の科目です。",
+                spokenDesc: "かぶぬし や しゅっししゃ から もとで として ていきょう された しきん を あらわす じゅんしさん の かもく です。"
+            },
+            {
+                kanji: "複式簿記",
+                kana: "ふくしきぼき",
+                category: "基礎知識",
+                level: "basic",
+                desc: "すべての取引を借方と貸方の2つの側面から記録・集計する簿記の記帳方式です。",
+                spokenDesc: "すべての とりひき を かりかた と かしかた の ふたつ の そくめん から きろく しゅうけい する ぼき の きちょう ほうしき です。"
+            },
+
+            // 2級・決算・発展用語
+            {
+                kanji: "減価償却費",
+                kana: "げんかしょうきゃくひ",
+                category: "費用",
+                level: "advanced",
+                desc: "建物や備品などの固定資産の取得原価を、耐用年数にわたって費用に配分する手続きです。",
+                spokenDesc: "たてもの や びひん などの こてい しさん の しゅとく げんか を、たいよう ねんすう に わたって ひよう に はいぶん する てつづき です。"
+            },
+            {
+                kanji: "貸借対照表",
+                kana: "たいしゃくたいしょうひょう",
+                category: "財務諸表",
+                level: "advanced",
+                desc: "一定時点（決算日）における企業の財政状態（資産・負債・純資産）を表す書類です。",
+                spokenDesc: "いってい じてん けっさんび における きぎょう の ざいせい じょうたい しさん ふさい じゅんしさん を あらわす しょるい です。"
+            },
+            {
+                kanji: "損益計算書",
+                kana: "そんえきけいさんしょ",
+                category: "財務諸表",
+                level: "advanced",
+                desc: "一定期間（会計期間）における企業の経営成績（収益と費用）を表す書類です。",
+                spokenDesc: "いってい きかん かいけい きかん における きぎょう の けいえい せいせき しゅうえき と ひよう を あらわす しょるい です。"
+            },
+            {
+                kanji: "貸倒引当金",
+                kana: "かしだおれひきあてきん",
+                category: "評価勘定",
+                level: "advanced",
+                desc: "将来の売掛金等の回収不能リスク（貸倒れ）に備えてあらかじめ設定しておく準備金です。",
+                spokenDesc: "しょうらい の うりかけきん などの かいしゅう ふのう りすく かしだおれ に そなえて あらかじめ せってい しておく じゅんびきん です。"
+            },
+            {
+                kanji: "有形固定資産",
+                kana: "ゆうけいこていしさん",
+                category: "資産",
+                level: "advanced",
+                desc: "建物、土地、車両運搬具など、長期にわたり営業で使用される実体のある資産です。",
+                spokenDesc: "たてもの、とち、しゃりょう うんぱんぐ など、ちょうき に わたリ えいぎょう で しよう される じったい の ある しさん です。"
+            },
+            {
+                kanji: "前払費用",
+                kana: "まえばらいひよう",
+                category: "経過勘定",
+                level: "advanced",
+                desc: "一定の契約に基づき、まだ提供されていない将来のサービスに対する対価を先に支払った資産です。",
+                spokenDesc: "いってい の けいやく に もとづき、まだ ていきょう されていない しょうらい の さーびす に たいする たいか を さき に しはらった しさん です。"
+            },
+            {
+                kanji: "減損会計",
+                kana: "げんそんかいけい",
+                category: "会計基準",
+                level: "advanced",
+                desc: "収益性が低下した固定資産の帳簿価格を切り下げ、損益に反映させる会計処理です。",
+                spokenDesc: "しゅうえきせい が ていか した こてい しさん の ちょうぼ かかく を きりさげ、そんえき に はんえい させる かいけい しょり です。"
+            },
+            {
+                kanji: "繰延資産",
+                kana: "くりのべしさん",
+                category: "資産",
+                level: "advanced",
+                desc: "創立費や開業費など、支出の効果が将来に及ぶため、一旦資産計上して段階的に費用化する項目です。",
+                spokenDesc: "そうりつひ や かいぎょうひ など、しゅつじ の こうか が しょうらい に およぶ ため、いったん しさん けいじょう して だんかいてき に ひようか する こうもく です。"
+            }
+        ];
+
+        // 日本語かな -> ローマ字バリエーションマッピング（多重分岐対応）
+        const ROMAJI_MAP = {
+            'あ': ['a'], 'い': ['i'], 'う': ['u'], 'え': ['e'], 'お': ['o'],
+            'か': ['ka'], 'き': ['ki'], 'く': ['ku'], 'け': ['ke'], 'こ': ['ko'],
+            'さ': ['sa'], 'し': ['shi', 'si', 'ci'], 'す': ['su'], 'せ': ['se'], 'そ': ['so'],
+            'た': ['ta'], 'ち': ['chi', 'ti'], 'つ': ['tsu', 'tu'], 'て': ['te'], 'と': ['to'],
+            'な': ['na'], 'に': ['ni'], 'ぬ': ['nu'], 'ね': ['ne'], 'の': ['no'],
+            'は': ['ha'], 'ひ': ['hi'], 'ふ': ['fu', 'hu'], 'へ': ['he'], 'ほ': ['ho'],
+            'ま': ['ma'], 'み': ['mi'], 'む': ['mu'], 'め': ['me'], 'も': ['mo'],
+            'や': ['ya'], 'ゆ': ['yu'], 'よ': ['yo'],
+            'ら': ['ra'], 'り': ['ri'], 'る': ['ru'], 'れ': ['re'], 'ろ': ['ro'],
+            'わ': ['wa'], 'を': ['wo'], 'ん': ['nn', 'n'],
+            'が': ['ga'], 'ぎ': ['gi'], 'ぐ': ['gu'], 'げ': ['ge'], 'ご': ['go'],
+            'ざ': ['za'], 'じ': ['ji', 'zi'], 'ず': ['zu'], 'ぜ': ['ze'], 'ぞ': ['zo'],
+            'だ': ['da'], 'ぢ': ['di'], 'づ': ['du'], 'で': ['de'], 'ど': ['do'],
+            'ば': ['ba'], 'び': ['bi'], 'ぶ': ['bu'], 'べ': ['be'], 'ぼ': ['bo'],
+            'ぱ': ['pa'], 'ぴ': ['pi'], 'ぷ': ['pu'], 'ぺ': ['pe'], 'ぽ': ['po'],
+
+            // 拗音（2文字かな）
+            'きゃ': ['kya', 'kilya', 'kixya'], 'きゅ': ['kyu', 'kilyu', 'kixyu'], 'きょ': ['kyo', 'kilyo', 'kixyo'],
+            'しゃ': ['sha', 'sya', 'silya', 'sixya'], 'しゅ': ['shu', 'syu', 'silyu', 'sixyu'], 'しょ': ['sho', 'syo', 'silyo', 'sixyo'],
+            'ちゃ': ['cha', 'tya', 'cya'], 'ちゅ': ['chu', 'tyu', 'cyu'], 'ちょ': ['cho', 'tyo', 'cyo'],
+            'にゃ': ['nya'], 'にゅ': ['nyu'], 'にょ': ['nyo'],
+            'ひゃ': ['hya'], 'ひゅ': ['hyu'], 'ひょ': ['hyo'],
+            'みゃ': ['mya'], 'みゅ': ['myu'], 'みょ': ['myo'],
+            'りゃ': ['rya'], 'りゅ': ['ryu'], 'りょ': ['ryo'],
+            'ぎゃ': ['gya'], 'ぎゅ': ['gyu'], 'ぎょ': ['gyo'],
+            'じゃ': ['ja', 'zya', 'jya'], 'じゅ': ['ju', 'zyu', 'jyu'], 'じょ': ['jo', 'zyo', 'jyo'],
+            'びゃ': ['bya'], 'びゅ': ['byu'], 'びょ': ['byo'],
+            'ぴゃ': ['pya'], 'ぴゅ': ['pyu'], 'ぴょ': ['pyo'],
+
+            // 促音・小文字
+            'ぁ': ['la', 'xa'], 'ぃ': ['li', 'xi'], 'ぅ': ['lu', 'xu'], 'ぇ': ['le', 'xe'], 'ぉ': ['lo', 'xo'],
+            'ゃ': ['lya', 'xya'], 'ゅ': ['lyu', 'xyu'], 'ょ': ['lyo', 'xyo'],
+            'っ': ['ltu', 'ltsu', 'xtsu', 'xtu'],
+            'ー': ['-']
+        };
+
+        // Game State Variables
+        let currentMode = 'all';
+        let wordList = [];
+        let currentWordIndex = 0;
+        let score = 0;
+        let combo = 0;
+        let totalTypedKeys = 0;
+        let totalErrors = 0;
+        let gameStartTime = 0;
+        let cpmInterval = null;
+
+        // Romaji Typing Engine State
+        let kanaTarget = "";         // e.g. "げんきん"
+        let currentKanaPos = 0;      // 今どこまで「かな」が確定したか
+        let activePatterns = [];     // 現在着目中の「かな」に対応するローマ字選択肢 (例: ["sho", "syo"])
+        let typedInputBuffer = "";  // 現在の「かな」に対してユーザーが打ち込んだ入力 (例: "s")
+
+        // Settings
+        let ttsEnabled = true;
+        let sfxEnabled = true;
+
+        // Web Audio API Sound Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!sfxEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'key') {
+                    // Quick type click
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.04);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'correct') {
+                    // Success chime
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'error') {
+                    // Error buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.12);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'win') {
+                    // Victory Fanfare
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
+                        o.start(now + idx * 0.1);
+                        o.stop(now + idx * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            updateSpeakingUI(false);
+        }
+
+        function speakWordAndExplanation(wordObj) {
+            if (!ttsEnabled || !('speechSynthesis' in window)) return;
+
+            stopSpeech(); // 音声を一回リセット
+
+            // 1. 問題キーワードの読み上げ（ひらがな）
+            const wordUtterance = new SpeechSynthesisUtterance(wordObj.kana);
+            wordUtterance.lang = 'ja-JP';
+            wordUtterance.rate = 1.1;
+            wordUtterance.pitch = 1.1;
+
+            wordUtterance.onstart = () => updateSpeakingUI(true, "キーワードを読み上げ中...");
+
+            wordUtterance.onend = () => {
+                // 2. キーワード終了後に、ひらがな音声を優先して正確に解説を読み上げ
+                if (currentWordIndex < wordList.length && wordList[currentWordIndex].kanji === wordObj.kanji) {
+                    const textToSpeak = wordObj.spokenDesc || wordObj.desc;
+                    const descUtterance = new SpeechSynthesisUtterance(textToSpeak);
+                    descUtterance.lang = 'ja-JP';
+                    descUtterance.rate = 1.0;
+                    descUtterance.pitch = 1.0;
+
+                    descUtterance.onstart = () => updateSpeakingUI(true, "解説を読み上げ中...");
+                    descUtterance.onend = () => updateSpeakingUI(false);
+
+                    window.speechSynthesis.speak(descUtterance);
+                } else {
+                    updateSpeakingUI(false);
+                }
+            };
+
+            window.speechSynthesis.speak(wordUtterance);
+        }
+
+        function updateSpeakingUI(isSpeaking, text = "") {
+            const indicator = document.getElementById('speakingIndicator');
+            const stateText = document.getElementById('speechStateText');
+            if (isSpeaking) {
+                indicator.classList.remove('opacity-0');
+                if (text) stateText.textContent = text;
+            } else {
+                indicator.classList.add('opacity-0');
+            }
+        }
+
+        // かな文字列の解析および打鍵判定エンジン
+        function prepareWordRomaji(kana) {
+            kanaTarget = kana;
+            currentKanaPos = 0;
+            typedInputBuffer = "";
+            loadCurrentKanaPatterns();
+            renderRomajiDisplay();
+        }
+
+        // 次に打つべき「かな」単位（1文字または2文字拗音）からパターンを取得
+        function loadCurrentKanaPatterns() {
+            if (currentKanaPos >= kanaTarget.length) {
+                activePatterns = [];
+                return;
+            }
+
+            const remaining = kanaTarget.substring(currentKanaPos);
+
+            // 2文字の拗音チェック（「しょ」「しゃ」「きゃ」など）
+            if (remaining.length >= 2) {
+                const pair = remaining.substring(0, 2);
+                if (ROMAJI_MAP[pair]) {
+                    activePatterns = [...ROMAJI_MAP[pair]];
+                    return;
+                }
+            }
+
+            // 「っ」の特殊判定（次が子音の場合、子音重ねを許容）
+            const firstChar = remaining.substring(0, 1);
+            if (firstChar === 'っ' && remaining.length >= 2) {
+                const nextKana = remaining.substring(1);
+                let nextFirstKey = getPrimaryFirstKey(nextKana);
+                
+                let basePatterns = ROMAJI_MAP['っ'] ? [...ROMAJI_MAP['っ']] : [];
+                if (nextFirstKey && !['a','i','u','e','o','n'].includes(nextFirstKey)) {
+                    basePatterns.unshift(nextFirstKey); // 子音重ねを最優先候補に
+                }
+                activePatterns = basePatterns;
+                return;
+            }
+
+            // 「ん」の特殊判定（直後が母音や「な・や」以外なら `n` 1回で確定許容）
+            if (firstChar === 'ん') {
+                let basePatterns = [...ROMAJI_MAP['ん']]; // ['nn', 'n']
+                activePatterns = basePatterns;
+                return;
+            }
+
+            // 通常の1文字かな
+            if (ROMAJI_MAP[firstChar]) {
+                activePatterns = [...ROMAJI_MAP[firstChar]];
+            } else {
+                activePatterns = [firstChar]; // 未登録文字のセーフティ
+            }
+        }
+
+        function getPrimaryFirstKey(kanaStr) {
+            if (!kanaStr) return null;
+            if (kanaStr.length >= 2 && ROMAJI_MAP[kanaStr.substring(0, 2)]) {
+                return ROMAJI_MAP[kanaStr.substring(0, 2)][0][0];
+            }
+            const single = kanaStr.substring(0, 1);
+            if (ROMAJI_MAP[single]) {
+                return ROMAJI_MAP[single][0][0];
+            }
+            return null;
+        }
+
+        // ユーザーのキー入力を評価するメイン関数
+        function processKeyInput(key) {
+            key = key.toLowerCase();
+            const testInput = typedInputBuffer + key;
+
+            // 現在有効な全パターンのうち、testInput で前方一致するものがあるか？
+            const matchingPatterns = activePatterns.filter(p => p.startsWith(testInput));
+
+            if (matchingPatterns.length > 0) {
+                // 正しいキー入力！
+                playSound('key');
+                typedInputBuffer = testInput;
+                totalTypedKeys++;
+
+                // 完全一致したパターンが存在するか確認
+                const exactMatch = matchingPatterns.find(p => p === typedInputBuffer);
+
+                if (exactMatch) {
+                    // 現在の「かな」単位をクリア！次の「かな」に進む
+                    if (kanaTarget.substring(currentKanaPos, currentKanaPos + 2) in ROMAJI_MAP && ROMAJI_MAP[kanaTarget.substring(currentKanaPos, currentKanaPos + 2)].includes(exactMatch)) {
+                        currentKanaPos += 2;
+                    } else {
+                        currentKanaPos += 1;
+                    }
+                    typedInputBuffer = "";
+                    loadCurrentKanaPatterns();
+                }
+
+                renderRomajiDisplay();
+
+                // 単語全体を打鍵し終えたか判定
+                if (currentKanaPos >= kanaTarget.length) {
+                    onWordCompleted();
+                }
+
+                return true;
+            } else {
+                // タイピングミス
+                playSound('error');
+                totalErrors++;
+                combo = 0;
+                updateStatsUI();
+                flashErrorUI();
+                return false;
+            }
+        }
+
+        // Romaji 表示の描画関数 (入力済み、現在入力中、未入力のスタイル分け)
+        function renderRomajiDisplay() {
+            const container = document.getElementById('romajiDisplay');
+            container.innerHTML = "";
+
+            // 1. すでに打鍵完了した部分
+            let completedKana = kanaTarget.substring(0, currentKanaPos);
+            // 簡易的にデフォルト表記で既打鍵テキストを視覚化
+            let typedRomajiHtml = `<span class="typed-text">${getStandardRomaji(completedKana)}</span>`;
+
+            // 2. 現在打鍵中の部分
+            let currentRomajiHtml = "";
+            if (activePatterns.length > 0) {
+                // 推奨する見本パターン（一番短い、あるいは最初にあるもの）
+                let displayPattern = activePatterns[0];
+
+                // すでにtypedInputBufferまで打っている場合、それを優先するパターンを表示
+                let activeMatch = activePatterns.find(p => p.startsWith(typedInputBuffer));
+                if (activeMatch) displayPattern = activeMatch;
+
+                for (let i = 0; i < displayPattern.length; i++) {
+                    const char = displayPattern[i];
+                    if (i < typedInputBuffer.length) {
+                        currentRomajiHtml += `<span class="typed-text">${char}</span>`;
+                    } else if (i === typedInputBuffer.length) {
+                        currentRomajiHtml += `<span class="current-char px-0.5">${char}</span>`;
+                    } else {
+                        currentRomajiHtml += `<span class="untyped-text">${char}</span>`;
+                    }
+                }
+            }
+
+            // 3. まだ着手していない残りの「かな」部分
+            let unreachedKana = kanaTarget.substring(currentKanaPos + (activePatterns.length > 0 && ROMAJI_MAP[kanaTarget.substring(currentKanaPos, currentKanaPos + 2)]?.includes(activePatterns[0]) ? 2 : 1));
+            let untypedRomajiHtml = `<span class="untyped-text">${getStandardRomaji(unreachedKana)}</span>`;
+
+            container.innerHTML = typedRomajiHtml + currentRomajiHtml + untypedRomajiHtml;
+        }
+
+        function getStandardRomaji(kanaStr) {
+            let res = "";
+            let idx = 0;
+            while (idx < kanaStr.length) {
+                if (idx + 1 < kanaStr.length && ROMAJI_MAP[kanaStr.substring(idx, idx + 2)]) {
+                    res += ROMAJI_MAP[kanaStr.substring(idx, idx + 2)][0];
+                    idx += 2;
+                } else if (ROMAJI_MAP[kanaStr[idx]]) {
+                    res += ROMAJI_MAP[kanaStr[idx]][0];
+                    idx += 1;
+                } else {
+                    res += kanaStr[idx];
+                    idx += 1;
+                }
+            }
+            return res;
+        }
+
+        function startGame(mode) {
+            currentMode = mode;
+
+            // モードによる単語フィルタリング
+            if (mode === 'all') {
+                wordList = [...BOOKKEEPING_WORDS];
+            } else {
+                wordList = BOOKKEEPING_WORDS.filter(w => w.level === mode);
+            }
+
+            // 配列をシャッフル (全10問)
+            wordList = wordList.sort(() => Math.random() - 0.5).slice(0, 10);
+
+            // ステータス初期化
+            currentWordIndex = 0;
+            score = 0;
+            combo = 0;
+            totalTypedKeys = 0;
+            totalErrors = 0;
+            gameStartTime = Date.now();
+
+            // 画面切り替え
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+
+            updateStatsUI();
+
+            // CPMタイマー開始
+            if (cpmInterval) clearInterval(cpmInterval);
+            cpmInterval = setInterval(updateStatsUI, 500);
+
+            // 最初の問題表示
+            showNextQuestion();
+        }
+
+        function showNextQuestion() {
+            if (currentWordIndex >= wordList.length) {
+                finishGame();
+                return;
+            }
+
+            const currentWord = wordList[currentWordIndex];
+
+            // UI要素の更新
+            document.getElementById('kanjiDisplay').textContent = currentWord.kanji;
+            document.getElementById('kanaDisplay').textContent = currentWord.kana;
+            document.getElementById('wordCategory').textContent = currentWord.category;
+            document.getElementById('explanationText').textContent = currentWord.desc;
+            document.getElementById('progressText').textContent = `${currentWordIndex + 1} / ${wordList.length}`;
+
+            // プログレスバーの更新
+            const progressPercent = (currentWordIndex / wordList.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            // タイピングエンジンセットアップ
+            prepareWordRomaji(currentWord.kana);
+
+            // 音声読み上げ発声！（キーワード ➔ タイピング中の解説）
+            speakWordAndExplanation(currentWord);
+        }
+
+        function onWordCompleted() {
+            // 【重要要件】正解した時点で説明の読み上げを停止して次へ！
+            stopSpeech();
+
+            playSound('correct');
+
+            // スコア・コンボ加算
+            combo++;
+            score += 100 + (combo * 10);
+            updateStatsUI();
+
+            // カード成功アニメーション
+            const card = document.getElementById('typingCard');
+            card.classList.add('border-emerald-400', 'bg-emerald-950/20');
+            setTimeout(() => {
+                card.classList.remove('border-emerald-400', 'bg-emerald-950/20');
+            }, 200);
+
+            // 次の問題へ
+            currentWordIndex++;
+            setTimeout(showNextQuestion, 150);
+        }
+
+        function flashErrorUI() {
+            const card = document.getElementById('typingCard');
+            card.classList.add('shake', 'border-red-500');
+            setTimeout(() => {
+                card.classList.remove('shake', 'border-red-500');
+            }, 300);
+        }
+
+        function updateStatsUI() {
+            document.getElementById('scoreText').textContent = score;
+            document.getElementById('comboText').textContent = combo;
+
+            // CPM (Characters Per Minute) 計算
+            const elapsedMinutes = (Date.now() - gameStartTime) / 60000;
+            const cpm = elapsedMinutes > 0 ? Math.round(totalTypedKeys / elapsedMinutes) : 0;
+            document.getElementById('cpmText').textContent = cpm;
+        }
+
+        function finishGame() {
+            stopSpeech();
+            if (cpmInterval) clearInterval(cpmInterval);
+
+            playSound('win');
+
+            // 勝利の紙吹雪エフェクト
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            // 成績集計
+            const elapsedSeconds = Math.max(1, Math.round((Date.now() - gameStartTime) / 1000));
+            const cpm = Math.round((totalTypedKeys / elapsedSeconds) * 60);
+            const accuracy = totalTypedKeys + totalErrors > 0 
+                ? Math.round((totalTypedKeys / (totalTypedKeys + totalErrors)) * 100) 
+                : 100;
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalTime').textContent = `${elapsedSeconds}s`;
+            document.getElementById('finalCpm').textContent = cpm;
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+
+            // 画面切り替え
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+        }
+
+        function resetToStart() {
+            stopSpeech();
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
+        // キーボード押下イベント
+        window.addEventListener('keydown', (e) => {
+            // モーダルや他画面表示中の場合は無効
+            if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+
+            // 制御キーなどの無視
+            if (e.key === 'Tab' || e.key === 'Alt' || e.key === 'Control' || e.key === 'Meta') return;
+
+            // キーボードの見た目（キーガイド）をアクティブに
+            const keyEl = document.querySelector(`.keyboard-key[data-key="${e.key.toLowerCase()}"]`);
+            if (keyEl) {
+                keyEl.classList.add('active');
+                setTimeout(() => keyEl.classList.remove('active'), 120);
+            }
+
+            // アルファベットのみ処理
+            if (e.key.length === 1 && (e.key.match(/[a-z]/i))) {
+                processKeyInput(e.key);
+            }
+        });
+
+        // 画面上の仮想キーボードのタップ・クリック入力対応
+        document.querySelectorAll('.keyboard-key').forEach(keyEl => {
+            keyEl.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+                
+                const key = keyEl.getAttribute('data-key');
+                if (key) {
+                    keyEl.classList.add('active');
+                    setTimeout(() => keyEl.classList.remove('active'), 120);
+                    processKeyInput(key);
+                }
+            });
+        });
+
+        // TTS (読み上げ) ON/OFF トグル
+        document.getElementById('ttsToggleBtn').addEventListener('click', () => {
+            ttsEnabled = !ttsEnabled;
+            const statusText = document.getElementById('ttsStatus');
+            const icon = document.getElementById('ttsIcon');
+
+            if (ttsEnabled) {
+                statusText.textContent = "音声読み上げ: ON";
+                icon.className = "fa-solid fa-volume-high";
+            } else {
+                statusText.textContent = "音声読み上げ: OFF";
+                icon.className = "fa-solid fa-volume-xmark";
+                stopSpeech();
+            }
+        });
+
+        // SFX (効果音) ON/OFF トグル
+        document.getElementById('sfxToggleBtn').addEventListener('click', () => {
+            sfxEnabled = !sfxEnabled;
+            const statusText = document.getElementById('sfxStatus');
+            const icon = document.getElementById('sfxIcon');
+
+            if (sfxEnabled) {
+                statusText.textContent = "効果音: ON";
+                icon.className = "fa-solid fa-music";
+            } else {
+                statusText.textContent = "効果音: OFF";
+                icon.className = "fa-solid fa-volume-off";
+            }
+        });
+    </script>
+</body>
+</html>
