@@ -116,6 +116,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: all 0.06s ease;
             font-weight: 700;
+            cursor: pointer;
+            user-select: none;
         }
         .wood-keycap.active {
             background: var(--color-gold) !important;
@@ -1263,6 +1265,41 @@
             }
         });
 
+        // Virtual keyboard click handler — allows playing by clicking on-screen keys
+        function setupVirtualKeyboardClicks() {
+            document.querySelectorAll('.wood-keycap').forEach(keyEl => {
+                keyEl.addEventListener('mousedown', (e) => {
+                    e.preventDefault(); // prevent focus loss from the hidden input
+                    e.stopPropagation();
+
+                    // Extract the key code from the element's id (e.g. "key-KeyA" -> "KeyA")
+                    const keyCode = keyEl.id.replace('key-', '');
+                    const char = codeToCharMap[keyCode];
+                    if (!char) return;
+
+                    ensureAudioRunning();
+
+                    // Visual press feedback
+                    keyEl.classList.add('active');
+                    setTimeout(() => keyEl.classList.remove('active'), 120);
+
+                    // Process the key input, same as physical keyboard
+                    lastKeydownTime = Date.now();
+                    if (timeLeft <= 0) return;
+
+                    if (!isPlaying) {
+                        startTimer();
+                        isPlaying = true;
+                    }
+
+                    processKeyInput(char);
+
+                    if (captureInput) captureInput.value = '';
+                    focusCapture();
+                });
+            });
+        }
+
         function playNativeKotoTone(freq) {
             ensureAudioRunning();
             if (!nativeAudioCtx) return;
@@ -1593,6 +1630,7 @@
 
         window.onload = function() {
             createSakuraPetals();
+            setupVirtualKeyboardClicks();
             resetGame();
         };
     </script>
