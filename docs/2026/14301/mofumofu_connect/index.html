@@ -645,10 +645,12 @@
             if (!isAdjacent) return;
 
             const targetItem = boardState[r][c];
-            const startItem = boardState[currentChain[0].r][currentChain[0].c];
+            const chainType = currentChain
+                .map(coords => boardState[coords.r][coords.c])
+                .find(item => !item.isBomb)?.id;
 
-            // Type match rule: Same animal species or either is a bomb
-            const typeMatch = (targetItem.id === startItem.id) || targetItem.isBomb || startItem.isBomb;
+            // A bomb can join any chain, but once a normal item is selected the chain stays that type.
+            const typeMatch = targetItem.isBomb || !chainType || targetItem.id === chainType;
             if (!typeMatch) return;
 
             // Check loopbacks to back out connection
