@@ -286,7 +286,7 @@
     </div>
 
     <!-- Hidden Input for mobile & desktop capturing -->
-    <input type="text" id="keyboard-capture" class="absolute opacity-0 pointer-events-none -z-10" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input type="text" id="keyboard-capture" class="fixed opacity-0 pointer-events-none -z-10" autocomplete="off" autocapitalize="off" spellcheck="false">
 
     <!-- App Header -->
     <header class="w-full px-6 py-4 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 z-20">
@@ -1150,7 +1150,7 @@
 
         function focusCapture() {
             const inp = document.getElementById('keyboard-capture');
-            if (inp) inp.focus();
+            if (inp) inp.focus({ preventScroll: true });
         }
 
         const KANA_TO_ROMAN = {
